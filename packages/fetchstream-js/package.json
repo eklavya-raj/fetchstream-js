@@ -1,7 +1,7 @@
 {
   "name": "fetchstream-js",
-  "version": "0.1.0",
-  "description": "High-performance streaming JSON parser for application/json. Emits values as soon as bytes arrive, no need to wait for the full response.",
+  "version": "0.1.1",
+  "description": "Drop-in replacement for fetch() and axios.get() for JSON endpoints. Renders data as bytes arrive instead of waiting for the full response. One-line React integration via .live().",
   "type": "module",
   "main": "./src/index.js",
   "module": "./src/index.js",
@@ -55,10 +55,14 @@
     "stream",
     "parser",
     "fetch",
+    "axios",
+    "react",
     "sax",
     "incremental",
     "performance",
-    "jsonpath"
+    "jsonpath",
+    "progressive",
+    "ttfb"
   ],
   "engines": {
     "node": ">=18"
