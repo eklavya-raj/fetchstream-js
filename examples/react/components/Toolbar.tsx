@@ -1,6 +1,6 @@
 "use client";
 
-import { DATASET_URL } from "../types";
+import { DATASET_URL } from "../app/types";
 
 export default function Toolbar({
   running,

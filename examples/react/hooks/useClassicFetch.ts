@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { initialMetrics, type Item, type Metrics } from "../types";
+import { initialMetrics, type Item, type Metrics } from "../app/types";
 
 interface ClassicState {
   metrics: Metrics;

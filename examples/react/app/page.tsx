@@ -1,4 +1,4 @@
-import ComparisonDemo from "./components/ComparisonDemo";
+import ComparisonDemo from "../components/ComparisonDemo";
 
 export default function Home() {
   return (

@@ -1,4 +1,4 @@
-import type { RunStatus } from "../types";
+import type { RunStatus } from "../app/types";
 
 const LABELS: Record<RunStatus, string> = {
   idle: "Idle",

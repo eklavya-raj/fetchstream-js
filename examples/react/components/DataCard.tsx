@@ -1,5 +1,5 @@
 import { memo } from "react";
-import type { Item } from "../types";
+import type { Item } from "../app/types";
 
 function DataCardImpl({ item, index }: { item: Item; index: number }) {
   return (
@@ -17,7 +17,10 @@ function DataCardImpl({ item, index }: { item: Item; index: number }) {
           <span className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
             {item.language}
             {item.version != null ? (
-              <span className="text-zinc-400 dark:text-zinc-500"> · {item.version}</span>
+              <span className="text-zinc-400 dark:text-zinc-500">
+                {" "}
+                · {item.version}
+              </span>
             ) : null}
           </span>
         </div>

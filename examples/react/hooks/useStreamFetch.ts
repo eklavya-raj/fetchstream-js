@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import { fetchStream } from "fetchstream";
-import { initialMetrics, type Item, type Metrics } from "../types";
+import {  streamJSON } from "fetchstream";
+import { initialMetrics, type Item, type Metrics } from "../app/types";
+import { streamFrom } from "fetchstream/node";
 
 /**
  * Streaming pattern using the headline `fetchStream(url)` API.
@@ -49,25 +50,17 @@ export function useStreamFetch() {
     const t0 = performance.now();
     let firstItemSeen = false;
 
-    // Side-channel: HEAD request for headers we can't read off the streaming
-    // handle (Content-Length, response time). Best-effort -- ignored on error.
-    fetch(url, { method: "HEAD", signal: ac.signal, cache: "no-store" })
-      .then((res) => {
-        if (!res.ok) return;
-        const ttfbMs = performance.now() - t0;
-        const cl = Number(res.headers.get("content-length"));
-        setMetrics((m) => ({
-          ...m,
-          ttfbMs,
-          bytes: Number.isFinite(cl) && cl > 0 ? cl : m.bytes,
-        }));
-      })
-      .catch(() => {
-        /* ignore -- HEAD is decorative */
-      });
 
-    // Headline fetchstream API: one call sets up fetch + parser + raf throttle.
-    const handle = fetchStream(url, { signal: ac.signal, cache: "no-store" });
+    const res = await fetch(url, { signal: ac.signal, cache: "no-store" });
+    //save max size of response
+    const cl = Number(res.headers.get("content-length"));
+    const bytes =
+      Number.isFinite(cl) && cl > 0
+        ? cl
+        : new TextEncoder().encode(JSON.stringify(res.body)).byteLength;
+
+
+    const handle = streamFrom(res.body!);
 
     handle.live<Item[]>(
       (root) => {
@@ -93,6 +86,7 @@ export function useStreamFetch() {
       setMetrics((m) => ({
         ...m,
         status: "done",
+        bytes,
         totalMs: performance.now() - t0,
         itemsRendered: dataRef.current.length,
       }));

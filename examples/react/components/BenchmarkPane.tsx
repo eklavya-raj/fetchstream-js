@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { formatBytes, formatMs, formatNumber } from "../lib/format";
-import type { Item, Metrics } from "../types";
+import type { Item, Metrics } from "../app/types";
 import DataCard from "./DataCard";
 import MetricCard from "./MetricCard";
 import ProgressBar from "./ProgressBar";
@@ -121,7 +121,9 @@ function PaneHeader({
               {title}
             </h2>
           </div>
-          <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">{subtitle}</p>
+          <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+            {subtitle}
+          </p>
         </div>
         <StatusBadge status={status} accent={accent} />
       </div>
@@ -176,7 +178,11 @@ function PaneCards({
           <>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {visible.map((item, i) => (
-                <DataCard key={`${i}-${item.id ?? item.name ?? i}`} item={item} index={i} />
+                <DataCard
+                  key={`${i}-${item.id ?? item.name ?? i}`}
+                  item={item}
+                  index={i}
+                />
               ))}
             </div>
             {overflow > 0 ? (

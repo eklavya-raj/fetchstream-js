@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from "react";
 import { useClassicFetch } from "../hooks/useClassicFetch";
 import { useStreamFetch } from "../hooks/useStreamFetch";
-import { DATASET_URL } from "../types";
+import { DATASET_URL } from "../app/types";
 import BenchmarkPane from "./BenchmarkPane";
 import SummaryCard from "./SummaryCard";
 import Toolbar from "./Toolbar";
@@ -19,7 +19,8 @@ export default function ComparisonDemo() {
   const classic = useClassicFetch();
   const stream = useStreamFetch();
 
-  const running = classic.metrics.status === "running" || stream.metrics.status === "running";
+  const running =
+    classic.metrics.status === "running" || stream.metrics.status === "running";
   const hasResult =
     classic.metrics.status === "done" || stream.metrics.status === "done";
 
@@ -48,7 +49,12 @@ export default function ComparisonDemo() {
     const b = stream.metrics.status === "done" ? stream.metrics.bytes : 0;
     const m = Math.max(a, b);
     return m > 0 ? m : null;
-  }, [classic.metrics.status, classic.metrics.bytes, stream.metrics.status, stream.metrics.bytes]);
+  }, [
+    classic.metrics.status,
+    classic.metrics.bytes,
+    stream.metrics.status,
+    stream.metrics.bytes,
+  ]);
 
   return (
     <div className="flex w-full max-w-6xl flex-col gap-6">

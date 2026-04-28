@@ -1,5 +1,5 @@
 import { formatMs } from "../lib/format";
-import type { Metrics } from "../types";
+import type { Metrics } from "../app/types";
 
 export default function SummaryCard({
   classic,
@@ -11,14 +11,19 @@ export default function SummaryCard({
   const a = classic.ttfiMs;
   const b = stream.ttfiMs;
   const ready =
-    a != null && b != null && b > 0 && a > 0 && classic.status === "done" && stream.status === "done";
+    a != null &&
+    b != null &&
+    b > 0 &&
+    a > 0 &&
+    classic.status === "done" &&
+    stream.status === "done";
 
   if (!ready) {
     return (
       <div className="rounded-2xl border border-dashed border-zinc-200 bg-white/40 p-5 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
         Run the benchmark to see how much sooner streaming gives you the first
-        visible row. Total transfer time is similar — that&apos;s network-bound —
-        but{" "}
+        visible row. Total transfer time is similar — that&apos;s network-bound
+        — but{" "}
         <span className="font-semibold text-zinc-800 dark:text-zinc-200">
           time-to-first-paint
         </span>{" "}
@@ -70,8 +75,8 @@ export default function SummaryCard({
           </div>
           <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
             Both finish at network speed.{" "}
-            <span className="font-semibold">fetchstream</span> shows row #1{" "}
-            ~{speedup >= 10 ? speedup.toFixed(0) : speedup.toFixed(1)}× sooner so
+            <span className="font-semibold">fetchstream</span> shows row #1 ~
+            {speedup >= 10 ? speedup.toFixed(0) : speedup.toFixed(1)}× sooner so
             users see content while bytes are still arriving.
           </p>
         </div>
