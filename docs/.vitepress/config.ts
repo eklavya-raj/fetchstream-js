@@ -27,7 +27,7 @@ export default defineConfig({
     siteTitle: "fetchstream-js",
 
     nav: [
-      { text: "Guide", link: "/guide/getting-started", activeMatch: "/guide/" },
+      { text: "Guide", link: "/guide/react", activeMatch: "/guide/" },
       { text: "API", link: "/api/", activeMatch: "/api/" },
       { text: "Examples", link: "/examples/", activeMatch: "/examples/" },
       {
@@ -48,27 +48,27 @@ export default defineConfig({
     sidebar: {
       "/guide/": [
         {
-          text: "Introduction",
+          text: "Start here",
           items: [
             { text: "What is fetchstream-js?", link: "/guide/what-is-fetchstream-js" },
-            { text: "Getting started", link: "/guide/getting-started" },
-            { text: "Why streaming?", link: "/guide/why-streaming" },
+            { text: "React quick start", link: "/guide/react" },
+            { text: "Why replace fetch / axios?", link: "/guide/why-streaming" },
           ],
         },
         {
-          text: "Core concepts",
+          text: "The primary API: .live()",
           items: [
-            { text: "Path syntax", link: "/guide/paths" },
-            { text: "Per-match callbacks", link: "/guide/on-matches" },
             { text: "Live mirror mode", link: "/guide/live-mode" },
-            { text: "Async iteration", link: "/guide/iteration" },
+            { text: "Getting started", link: "/guide/getting-started" },
+            { text: "Node.js", link: "/guide/node" },
           ],
         },
         {
-          text: "Integration",
+          text: "Advanced",
           items: [
-            { text: "React", link: "/guide/react" },
-            { text: "Node.js", link: "/guide/node" },
+            { text: "Per-match callbacks", link: "/guide/on-matches" },
+            { text: "Path syntax", link: "/guide/paths" },
+            { text: "Async iteration", link: "/guide/iteration" },
             { text: "Manual feeding", link: "/guide/manual-feeding" },
           ],
         },

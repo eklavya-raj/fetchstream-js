@@ -1,15 +1,20 @@
-# fetchstream-js vs fetch + JSON.parse — Next.js demo
+# fetchstream-js vs fetch / axios — Next.js benchmark demo
 
-**🚀 Live demo:** [fetchstream.vercel.app](https://fetchstream.vercel.app/)
+**🚀 Live demo:** [fetchstream-js.vercel.app](https://fetchstream-js.vercel.app/)
 
 A production-grade, side-by-side benchmark UI built with Next.js 16, React 19,
-and Tailwind v4. Both panes hit the same dataset, read the same bytes, and
-race to put rows on screen:
+and Tailwind v4. Both panes hit the **same endpoint**, download the **same
+bytes**, and race to paint rows on screen — showing how `fetchstream-js`
+replaces `fetch()` / `axios.get()` for JSON endpoints without changing anything
+on the server.
 
-| Pane          | Strategy                                                                   |
-| ------------- | -------------------------------------------------------------------------- |
-| **Classic**   | `fetch()` → buffer the whole body → `JSON.parse()` → render.               |
-| **Streaming** | `fetch()` → feed bytes into `fetchstream-js` → render rows as they arrive. |
+| Pane          | Strategy                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------------ |
+| **Classic**   | `await fetch(url).then(r => r.json())` — exactly what you'd write with `fetch` or `axios`. |
+| **Streaming** | `fetchStream(url).live(setState, { throttle: "raf" })` — rows appear as bytes stream in.   |
+
+Both approaches finish at the same network speed. The demo makes the gap in
+**time-to-first-row** impossible to miss.
 
 Dataset: [`microsoftedge.github.io/Demos/json-dummy-data/5MB.json`](https://microsoftedge.github.io/Demos/json-dummy-data/5MB.json)
 (an array of ~10k objects, served with permissive CORS over GitHub Pages).

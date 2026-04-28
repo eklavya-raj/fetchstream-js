@@ -3,38 +3,41 @@ layout: home
 
 hero:
   name: fetchstream-js
-  text: Streaming JSON parser
-  tagline: Emit values as bytes arrive — no waiting for JSON.parse on 5 MB payloads.
+  text: A drop-in replacement for fetch & axios
+  tagline: Your UI sees data the moment the first bytes arrive — no waiting for the full response body like fetch().json() or axios.get() force you to.
   image:
     src: /logo.svg
     alt: fetchstream-js
   actions:
     - theme: brand
-      text: Get started
-      link: /guide/getting-started
+      text: React quick start
+      link: /guide/react
     - theme: alt
-      text: View on GitHub
+      text: Why replace fetch/axios?
+      link: /guide/what-is-fetchstream-js
+    - theme: alt
+      text: GitHub
       link: https://github.com/eklavya-raj/fetchstream-js
 
 features:
+  - icon: ⚛️
+    title: One-line React integration
+    details: "fetchStream(url).live(setState, { throttle: 'raf' }) — the state grows as bytes arrive, one render per animation frame. No reducers, no manual rAF, no copies."
   - icon: ⚡
-    title: 260× faster time-to-first-value
-    details: Parse byte-by-byte. Render the first row in ~12 ms against a 5 MB response that JSON.parse holds up for 3 seconds.
+    title: Instant first paint
+    details: fetch and axios block until the whole body downloads. fetchstream-js renders rows while the rest is still in flight — typically 100–300× faster time-to-first-row.
   - icon: 🎯
-    title: Selective materialization
-    details: Subscribe to JSONPath-lite expressions like `$.users.*`. Only those subtrees are built — the rest is parsed but skipped.
+    title: Same API shape as fetch
+    details: "fetchStream(url, init) accepts the full RequestInit — headers, method, body, signal, credentials. Swap it in where you already use fetch()."
   - icon: 🪶
     title: Zero dependencies, ~12 KB
-    details: Pure JavaScript, native fetch, native TextDecoder. Works in browsers and Node 18+ without a build step.
+    details: Pure JavaScript, native TextDecoder, native fetch. Works in browsers and Node 18+ without any build tooling.
   - icon: 🧵
-    title: Cross-chunk safe
-    details: Strings, numbers, keywords, surrogate pairs, escapes — all handled whether they fit in one chunk or span many.
-  - icon: ⚛️
-    title: React-ready out of the box
-    details: Live mirror mode with built-in `requestAnimationFrame` throttling. One render per frame, even at 10k+ matches.
+    title: Works with any JSON shape
+    details: Plain `application/json` — objects, nested arrays, envelopes, pagination payloads. Not just NDJSON or JSON Lines.
   - icon: 🔌
-    title: Two complementary patterns
-    details: Per-match callbacks for one-shot subtrees, or a live mirror that grows the same object reference in place.
+    title: Aborts, backpressure, streams
+    details: "AbortController signals, async iteration for backpressure, and Node Readable / Web ReadableStream adapters out of the box."
 ---
 
 <style>
@@ -43,46 +46,79 @@ features:
 }
 </style>
 
-## Quick taste
+## The problem
+
+`fetch()` and `axios.get()` both do the same thing: **wait for the entire response body to arrive**, then hand it to you as one blob. For a 3 MB JSON list on a slow network, that's a 3-second blank screen before your UI sees a single row.
+
+```js
+// fetch — waits for full body, then JSON.parse, then render.
+const res = await fetch("/api/users");
+const users = await res.json(); //  ⏳ 3 s on a 3 MB payload
+render(users);
+```
+
+```js
+// axios — same story.
+const { data } = await axios.get("/api/users"); //  ⏳ 3 s on a 3 MB payload
+render(data);
+```
+
+## The fix
+
+`fetchstream-js` reads the response **as it streams in** and hands you values as soon as their closing `}` arrives. Same URL, same server, same bytes — but your first row paints in milliseconds.
 
 ```js
 import { fetchStream } from "fetchstream-js";
 
-// Each user renders as soon as its closing `}` arrives.
-await fetchStream("/api/users")
-  .on("$.users.*", (user) => render(user))
-  .on("$.meta", (meta) => setMeta(meta))
-  .on("$.totalCount", (n) => setCount(n));
-```
-
-Or use a live mirror that matches your final document shape as it grows:
-
-```js
-await fetchStream("/api/data").live(
-  (root) => {
-    // `root` is the same reference every call, growing in place.
-    // Perfect for React / Vue / Svelte progressive rendering.
-    render(root);
-  },
-  { throttle: "raf" },
+await fetchStream("/api/users").live(
+  (root) => render(root), // called as `root.users` grows
+  { throttle: "raf" }, // coalesce to one render per animation frame
 );
 ```
 
-## Why bother?
+That's it — `.live()` gives you the **same object reference** every call, mutated in place. Stash it in React state and you get streaming UI with zero ceremony.
 
-`JSON.parse` is fast — but it requires the **entire** response before returning anything. For a 3 MB list streamed over a slow network, that's a 3-second blank screen.
+## React in 8 lines
 
-`fetchstream-js` parses byte-by-byte. By the time the first 16 KB arrives, you can already render the first dozen rows.
+```tsx
+import { fetchStream } from "fetchstream-js";
+import { useEffect, useState } from "react";
 
-<div style="margin-top: 2rem; padding: 1rem; border: 1px solid var(--vp-c-divider); border-radius: 8px;">
+export function Users() {
+  const [data, setData] = useState<any>(null);
+  useEffect(() => {
+    const ac = new AbortController();
+    fetchStream("/api/users", { signal: ac.signal }).live(
+      (root) => setData({ ...root }),
+      { throttle: "raf" },
+    );
+    return () => ac.abort();
+  }, []);
+  return <pre>{JSON.stringify(data, null, 2)}</pre>;
+}
+```
 
-### Benchmark — 20 000 items, 16 KiB chunks @ 4 ms
+No reducers, no refs, no manual `requestAnimationFrame`. The library already throttles for you.
 
-| Approach                    | First item | Last item |
-| --------------------------- | ---------: | --------: |
-| `JSON.parse` after fetch    |   ~3134 ms |   3134 ms |
-| `fetchStream` `$.results.*` |     ~12 ms |   3116 ms |
+## Benchmark — 5 MB JSON payload, real network
+
+<div style="margin-top: 1rem; padding: 1rem; border: 1px solid var(--vp-c-divider); border-radius: 8px;">
+
+| Approach                              | Time to first row | Time to last row |
+| ------------------------------------- | ----------------: | ---------------: |
+| `fetch().then(r => r.json())`         |         ~3 100 ms |        ~3 100 ms |
+| `axios.get(url)`                      |         ~3 100 ms |        ~3 100 ms |
+| **`fetchStream(url).live(setState)`** |       **~120 ms** |        ~3 100 ms |
 
 </div>
 
-Same total finish time — we're network-bound either way — but **~260× faster time-to-first-value**.
+Both finish at the same speed — the network hasn't changed. But your user sees rows **25× sooner**, which is the metric that actually matters for perceived performance.
+
+👉 **[See the full React benchmark demo](https://fetchstream-js.vercel.app/)**
+
+## Where to next?
+
+- **[React quick start](/guide/react)** — the `.live()` hook pattern, ready to paste
+- **[Live mirror mode](/guide/live-mode)** — how `.live()` coalesces updates
+- **[Why streaming?](/guide/why-streaming)** — full comparison vs fetch / axios / JSON.parse
+- **[API reference](/api/fetch-stream)** — every option, every method

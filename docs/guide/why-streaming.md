@@ -1,10 +1,27 @@
-# Why streaming?
+# Why replace fetch / axios?
 
-`JSON.parse` is the gold standard for parsing JSON — it's native, battle-tested, and written in C++. But it has one fundamental limitation:
+`fetch()` and `axios.get()` are perfectly fine HTTP clients — they're not the problem. The problem is what they do to your JSON response:
 
-> It cannot start parsing until it has the **entire** input string.
+> They buffer the **entire** response body before they hand you anything.
 
-For small payloads (< 100 KB) this is invisible. For large responses it becomes a UX problem.
+`await res.json()` waits for the last byte. `axios.get(url)` waits for the last byte. Only then can `JSON.parse` run. Only then can your component render. For small payloads (< 100 KB) this is invisible. For any non-trivial response — product lists, analytics dumps, reports, search results — it becomes a UX problem.
+
+## The three approaches, side by side
+
+```js
+// fetch — buffers, then parses, then renders
+const data = await fetch("/api/users").then((r) => r.json()); // ⏳
+render(data);
+
+// axios — same behavior, different wrapper
+const { data } = await axios.get("/api/users"); // ⏳
+render(data);
+
+// fetchstream-js — renders as bytes arrive
+fetchStream("/api/users").live((root) => render(root), { throttle: "raf" });
+```
+
+Same endpoint. Same response. Same network. Only one of them lets your user see rows before the download finishes.
 
 ## The blocking flow
 

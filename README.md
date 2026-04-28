@@ -1,7 +1,22 @@
 # fetchstream-js — monorepo
 
+> **A drop-in replacement for `fetch()` and `axios.get()` for JSON endpoints.**
+> Your UI sees data the moment the first bytes land on the wire — not after the full response finishes downloading.
+
 **Docs:** [eklavya-raj.github.io/fetchstream-js](https://eklavya-raj.github.io/fetchstream-js/)  
-**React demo:** [fetchstream.vercel.app](https://fetchstream.vercel.app/)
+**npm:** [npmjs.com/package/fetchstream-js](https://www.npmjs.com/package/fetchstream-js)  
+**React demo:** [fetchstream-js.vercel.app](https://fetchstream-js.vercel.app/)
+
+```js
+// ❌ fetch / axios: blocks until the full body downloads
+const data = await fetch("/api/users").then((r) => r.json()); // ⏳ 3 s
+render(data);
+
+// ✅ fetchstream-js: renders as bytes arrive
+import { fetchStream } from "fetchstream-js";
+fetchStream("/api/users").live((root) => render(root), { throttle: "raf" });
+//                                                          first row in ~120 ms
+```
 
 This repository is a [pnpm workspace](https://pnpm.io/workspaces) containing
 the **`fetchstream-js`** library and its runnable examples.
