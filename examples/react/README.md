@@ -1,6 +1,6 @@
 # fetchstream-js vs fetch + JSON.parse — Next.js demo
 
-**🚀 Live demo:** [fetchstream-js.vercel.app](https://fetchstream-js.vercel.app/)
+**🚀 Live demo:** [fetchstream.vercel.app](https://fetchstream.vercel.app/)
 
 A production-grade, side-by-side benchmark UI built with Next.js 16, React 19,
 and Tailwind v4. Both panes hit the same dataset, read the same bytes, and

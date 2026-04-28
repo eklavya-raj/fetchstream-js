@@ -1,7 +1,7 @@
 # fetchstream-js — monorepo
 
 **Docs:** [eklavya-raj.github.io/fetchstream-js](https://eklavya-raj.github.io/fetchstream-js/)  
-**React demo:** [fetchstream-js.vercel.app](https://fetchstream-js.vercel.app/)
+**React demo:** [fetchstream.vercel.app](https://fetchstream.vercel.app/)
 
 This repository is a [pnpm workspace](https://pnpm.io/workspaces) containing
 the **`fetchstream-js`** library and its runnable examples.
