@@ -45,16 +45,28 @@ buffering.
 ## Where the code lives
 
 ```
-app/
-├── page.tsx                       # hero + composition
-├── layout.tsx                     # metadata, fonts
-├── globals.css                    # Tailwind v4 + indeterminate keyframe
-├── lib/format.ts                  # bytes / ms / number / throughput formatters
-└── components/
-    ├── ComparisonDemo.tsx         # client orchestrator + both runners
-    └── Pane.tsx                   # reusable benchmark pane
+examples/react/
+├── app/
+│   ├── page.tsx                   # hero + composition
+│   ├── layout.tsx                 # metadata, fonts
+│   ├── globals.css                # Tailwind v4 + indeterminate keyframe
+│   └── types.ts                   # shared Item / Metrics types
+├── components/
+│   ├── ComparisonDemo.tsx         # client orchestrator (wires up both panes)
+│   ├── BenchmarkPane.tsx          # one side of the side-by-side comparison
+│   ├── DataCard.tsx               # individual row card
+│   ├── MetricCard.tsx             # single metric tile (time / bytes / count)
+│   ├── ProgressBar.tsx            # download progress indicator
+│   ├── StatusBadge.tsx            # idle / running / done badge
+│   ├── SummaryCard.tsx            # post-run takeaway (speedup factor)
+│   └── Toolbar.tsx                # URL input, run/cancel, dataset picker
+├── hooks/
+│   ├── useClassicFetch.ts         # `fetch().then(r => r.json())` runner
+│   └── useStreamFetch.ts          # `fetchStream(url).live(...)` runner
+└── lib/
+    └── format.ts                  # bytes / ms / number / throughput formatters
 ```
 
-The two runners (`runClassic`, `runStream`) live in `ComparisonDemo.tsx` and
-share the same `AbortController`, the same byte-counter strategy (so progress
-bars are comparable), and the same item shape.
+The two hooks (`useClassicFetch`, `useStreamFetch`) share the same
+`AbortController` strategy and the same byte-counter logic, so progress bars
+and metrics are directly comparable across the two panes.
