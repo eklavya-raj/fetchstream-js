@@ -3,6 +3,8 @@
 **High-performance streaming JSON parser for `application/json`.**
 Emits values as bytes arrive — no waiting for the full response.
 
+📖 **[Documentation & API reference](https://eklavya-raj.github.io/fetchstream/)**
+
 - Pure JavaScript, zero dependencies, ~12 KB unminified
 - Works with **plain `application/json`** (not just NDJSON / JSON Lines)
 - Uses the native `fetch()` body stream in browsers and Node 18+

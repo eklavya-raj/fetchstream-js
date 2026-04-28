@@ -1,5 +1,7 @@
 # fetchstream vs fetch + JSON.parse — Next.js demo
 
+**🚀 Live demo:** [fetchstream.vercel.app](https://fetchstream.vercel.app/)
+
 A production-grade, side-by-side benchmark UI built with Next.js 16, React 19,
 and Tailwind v4. Both panes hit the same dataset, read the same bytes, and
 race to put rows on screen:
