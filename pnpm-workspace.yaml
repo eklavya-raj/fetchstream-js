@@ -3,3 +3,16 @@ packages:
   - "examples/node"
   - "examples/react"
   - "docs"
+
+# Force patched versions of transitive deps flagged by `pnpm audit`.
+# All three advisories are inside dev-only tooling (docs build, examples
+# build) and never reach the published `fetchstream-js` package.
+#   - esbuild  <=0.24.2  -> GHSA-67mh-4wv8-2f99 (dev-server SSRF)
+#   - vite     <=6.4.1   -> GHSA-4w7w-66w2-5vf9 (path traversal)
+#   - postcss  <8.5.10   -> GHSA-qx2v-qp2m-jg93 (XSS via </style>)
+# Bumps are minor/patch-level within the existing major ranges that
+# vitepress and next already accept, so no breaking-change risk.
+overrides:
+  esbuild: ">=0.25.0"
+  vite: ">=6.4.2"
+  postcss: ">=8.5.10"
