@@ -1,4 +1,4 @@
-// Live-mirror example. The `root` object grows in place as bytes arrive;
+// Live-mirror example. The `data` object grows in place as bytes arrive;
 // we print it every time a top-level item has been fully committed, so you
 // can literally watch the JSON document assemble itself.
 //
@@ -16,8 +16,12 @@ const t0 = performance.now();
 let updateCount = 0;
 let lastShownSize = 0;
 
-await fetchStream(URL).live((root) => {
-  updateCount++;
+// `.live()` callback receives a fresh `{ data, chunks, done, path }` wrapper
+// each delivery. `data` is the in-place-mutating root tree; `chunks` is a
+// per-subscription delivery counter. In Node there's no rAF, so by default
+// every parser mutation produces a delivery -- exactly what the demo wants.
+await fetchStream(URL).live(({ data: root, chunks }) => {
+  updateCount = chunks;
   if (!root || !Array.isArray(root.results)) return;
   const curSize = root.results.length;
   const last = root.results[curSize - 1];

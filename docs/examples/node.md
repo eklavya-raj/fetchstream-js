@@ -73,9 +73,9 @@ import { fetchStream } from "fetchstream-js";
 
 let count = 0;
 await fetchStream("http://localhost:8787/data").live(
-  (root) => {
-    if (Array.isArray(root) && root.length !== count) {
-      count = root.length;
+  ({ data }) => {
+    if (Array.isArray(data) && data.length !== count) {
+      count = data.length;
       process.stdout.write(`\r  ${count} items so far`);
     }
   },

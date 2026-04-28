@@ -42,7 +42,7 @@ test('live: root object { user1, user2, user3 } grows in place', () => {
 
   const handle = new StreamHandle();
   let firedCount = 0;
-  handle.live((root) => {
+  handle.live(({ data: root }) => {
     // Keep deep-cloning only at moments of interest below.
     if (firedCount === 0 && root.user1 && root.user1.age !== undefined && !root.user2) {
       Object.assign(afterUser1, JSON.parse(JSON.stringify(root)));
@@ -100,7 +100,7 @@ test('live: root array of objects grows one element at a time', () => {
   let prevLen = 0;
 
   const handle = new StreamHandle();
-  handle.live((root) => {
+  handle.live(({ data: root }) => {
     if (!Array.isArray(root)) return;
     // A commit happens when the array length grew AND the newest element is an object
     // that now has all of its properties assembled. We approximate "committed" as
@@ -151,7 +151,7 @@ test('live: nested object with multiple arrays grows progressively', () => {
 
   let afterFirstStudent = null;
   const handle = new StreamHandle();
-  handle.live((root) => {
+  handle.live(({ data: root }) => {
     if (afterFirstStudent) return;
     if (root.students && root.students.length === 1 && root.students[0].name === 'Alex') {
       // Exactly one student committed, no teachers/admins yet.
@@ -181,7 +181,7 @@ test('live: nested object with multiple arrays grows progressively', () => {
 test('live: root primitive fires exactly once with the value', () => {
   const calls = [];
   const handle = new StreamHandle();
-  handle.live(v => calls.push(v));
+  handle.live(({ data }) => calls.push(data));
   handle.feed(enc.encode('42'));
   handle.end();
   assert.deepStrictEqual(calls, [42]);
@@ -195,7 +195,7 @@ test('onProgress: scoped to a subtree', () => {
   const json = '{"meta":{"total":3},"students":[{"name":"A"},{"name":"B"},{"name":"C"}]}';
   const observedStudents = [];
   const handle = new StreamHandle();
-  handle.onProgress('$.students', (arr) => {
+  handle.onProgress('$.students', ({ data: arr }) => {
     observedStudents.push(JSON.parse(JSON.stringify(arr)));
   });
   handle.feed(enc.encode(json));
@@ -223,7 +223,7 @@ test('live + on: mirror and per-item callbacks both work', () => {
   let finalRoot = null;
   const handle = new StreamHandle();
   handle
-    .live(r => { finalRoot = r; })
+    .live(({ data }) => { finalRoot = data; })
     .on('$.users.*', u => items.push(u));
 
   handle.feed(enc.encode(json));
@@ -268,7 +268,7 @@ test('live({ throttle: <ms> }): coalesces updates, final flush on end()', async 
   const calls = [];
 
   const handle = new StreamHandle();
-  handle.live((root) => {
+  handle.live(({ data: root }) => {
     calls.push(JSON.parse(JSON.stringify(root)));
   }, { throttle: 50 });
 
@@ -295,7 +295,7 @@ test('live({ throttle: "raf" }): coalesces and flushes on end (Node fallback)', 
   const calls = [];
 
   const handle = new StreamHandle();
-  handle.live((root) => {
+  handle.live(({ data: root }) => {
     calls.push(JSON.parse(JSON.stringify(root)));
   }, { throttle: 'raf' });
 
@@ -326,7 +326,7 @@ test('live({ throttle: "raf" }): uses globalThis.requestAnimationFrame when defi
   try {
     const handle = new StreamHandle();
     const calls = [];
-    handle.live((root) => { calls.push(root.x); }, { throttle: 'raf' });
+    handle.live(({ data }) => { calls.push(data.x); }, { throttle: 'raf' });
 
     handle.feed(enc.encode('{"x":'));
     handle.feed(enc.encode('1}'));
@@ -353,7 +353,7 @@ test('onProgress({ throttle: <ms> }) on a subtree', async () => {
   const seen = [];
 
   const handle = new StreamHandle();
-  handle.onProgress('$.items', (arr) => {
+  handle.onProgress('$.items', ({ data: arr }) => {
     seen.push(arr.slice());
   }, { throttle: 50 });
 
@@ -364,6 +364,72 @@ test('onProgress({ throttle: <ms> }) on a subtree', async () => {
 
   assert.equal(seen.length, 1);
   assert.deepStrictEqual(seen[0], [1, 2, 3, 4, 5]);
+});
+
+// ----------------------------------------------------------------------
+// Wrapper shape: live()/onProgress() callbacks receive a fresh
+// { data, chunks, done, path } object each tick. `data` is stable across
+// ticks (in-place-mutating tree); the wrapper itself is NOT, so consumers
+// like React's setState re-render naturally.
+// ----------------------------------------------------------------------
+test('live: callback receives fresh { data, chunks, done, path } wrapper each tick', () => {
+  const json = '{"a":1,"b":2,"c":3}';
+  const wrappers = [];
+
+  const handle = new StreamHandle();
+  handle.live((snap) => { wrappers.push(snap); });
+  handle.feed(enc.encode(json));
+  handle.end();
+
+  assert.ok(wrappers.length >= 2, 'multiple deliveries while object grows');
+
+  // chunks increments by exactly 1 each tick, starting at 1.
+  for (let i = 0; i < wrappers.length; i++) {
+    assert.equal(wrappers[i].chunks, i + 1, 'chunks at index ' + i);
+  }
+
+  // done is false on every tick except the last.
+  for (let i = 0; i < wrappers.length - 1; i++) {
+    assert.equal(wrappers[i].done, false, 'not done at index ' + i);
+  }
+  assert.equal(wrappers[wrappers.length - 1].done, true, 'done on final tick');
+
+  // path on a root subscription is an empty array.
+  assert.deepStrictEqual(wrappers[0].path, []);
+
+  // Final wrapper has the fully formed document under `data`.
+  assert.deepStrictEqual(wrappers[wrappers.length - 1].data, { a: 1, b: 2, c: 3 });
+
+  // Wrapper REFERENCE changes per tick (so React's setState bail-out doesn't kick in)...
+  for (let i = 1; i < wrappers.length; i++) {
+    assert.notStrictEqual(wrappers[i], wrappers[i - 1], 'wrapper ref changes at ' + i);
+  }
+
+  // ...but the underlying `data` reference is stable (in-place mutation).
+  for (let i = 1; i < wrappers.length; i++) {
+    assert.strictEqual(wrappers[i].data, wrappers[0].data, 'data ref stable at ' + i);
+  }
+});
+
+test('onProgress: subtree subscriptions get their own per-sub chunks counter and done', () => {
+  const json = '{"items":[1,2,3]}';
+  const itemsTicks = [];
+
+  const handle = new StreamHandle();
+  handle.onProgress('$.items', (snap) => { itemsTicks.push(snap); });
+  handle.feed(enc.encode(json));
+  handle.end();
+
+  assert.ok(itemsTicks.length >= 1);
+  // chunks counter is local to this subscription; starts at 1.
+  assert.equal(itemsTicks[0].chunks, 1);
+  // path is the matched location.
+  assert.deepStrictEqual(itemsTicks[0].path, ['items']);
+  // The final delivery for this subscription has done=true (when items closes),
+  // even though there may be more bytes after in the parent document.
+  const last = itemsTicks[itemsTicks.length - 1];
+  assert.equal(last.done, true);
+  assert.deepStrictEqual(last.data, [1, 2, 3]);
 });
 
 // ----------------------------------------------------------------------

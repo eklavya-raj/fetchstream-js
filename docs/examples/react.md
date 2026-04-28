@@ -34,7 +34,7 @@ app/
 ├── lib/format.ts                     # formatBytes / formatMs / formatNumber
 ├── hooks/
 │   ├── useClassicFetch.ts            # fetch + json
-│   └── useStreamFetch.ts             # fetchStream + live({ throttle: 'raf' })
+│   └── useStreamFetch.ts             # fetchStream + live(setSnap)
 └── components/
     ├── ComparisonDemo.tsx            # thin orchestrator
     ├── Toolbar.tsx                   # run / abort / reset + dataset chip
@@ -73,34 +73,38 @@ async function run(url: string) {
 
 ## Streaming side
 
-Uses the headline `fetchStream(url)` API and the library's built-in `throttle: 'raf'`:
+Uses the headline `fetchStream(url)` API. In browsers `.live()` defaults to `requestAnimationFrame` throttling, and the callback receives a fresh `{ data, chunks, done, path }` wrapper each tick — so `setSnap(wrapper)` re-renders without spread/ref/reducer ceremony.
 
 ```ts
 const handle = fetchStream(url, { signal, cache: "no-store" });
 
-handle.live<Item[]>(
-  (root) => {
-    dataRef.current = Array.isArray(root) ? root : [];
-    const len = dataRef.current.length;
-    if (!firstItemSeen && len > 0) {
-      firstItemSeen = true;
-      setMetrics((m) => ({ ...m, ttfiMs: performance.now() - t0, itemsRendered: len }));
-    } else {
-      setMetrics((m) => (m.itemsRendered === len ? m : { ...m, itemsRendered: len }));
-    }
-    tick();
-  },
-  { throttle: "raf" },
-);
+handle.live<Item[]>((wrapper) => {
+  // Pass the wrapper straight to setState. New ref each tick => React re-renders.
+  // wrapper.data is the same in-place-mutating array, so reads stay zero-copy.
+  setSnap(wrapper);
+  const len = Array.isArray(wrapper.data) ? wrapper.data.length : 0;
+  if (!firstItemSeen && len > 0) {
+    firstItemSeen = true;
+    setMetrics((m) => ({
+      ...m,
+      ttfiMs: performance.now() - t0,
+      itemsRendered: len,
+    }));
+  } else {
+    setMetrics((m) =>
+      m.itemsRendered === len ? m : { ...m, itemsRendered: len },
+    );
+  }
+});
 
 await handle;
 ```
 
 Notes:
 
-- `dataRef` holds the live root — the parser mutates it in place
-- `tick()` (a `useReducer` increment) forces a re-render once per animation frame
-- No custom React rAF batcher — the library's `throttle: 'raf'` does the coalescing
+- `wrapper.data` is the live root — the parser mutates it in place
+- The wrapper itself is a fresh object each tick, so `setSnap(wrapper)` is enough to re-render
+- No `useRef` / `useReducer` / manual rAF — the library does the coalescing in browsers
 
 ## Why a side-channel HEAD?
 
@@ -112,7 +116,9 @@ fetch(url, { method: "HEAD", signal, cache: "no-store" })
     const cl = Number(res.headers.get("content-length"));
     setMetrics((m) => ({ ...m, bytes: cl, ttfbMs: performance.now() - t0 }));
   })
-  .catch(() => { /* best-effort */ });
+  .catch(() => {
+    /* best-effort */
+  });
 ```
 
 This is the recommended pattern when you need response metadata that isn't part of the parsed JSON.

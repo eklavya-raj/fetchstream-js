@@ -89,9 +89,24 @@ export class StreamPicker {
     return this;
   }
 
-  // Fires REPEATEDLY as the value at `path` grows. Callback receives the same
-  // mutable reference each time (grows in place) plus the path at which it was
-  // rooted. Perfect for rendering a live mirror of the document.
+  // Fires REPEATEDLY as the value at `path` grows. Callback receives a single
+  // wrapper:
+  //
+  //   { data, chunks, done, path }
+  //
+  // - `data`   : the live mutating value at this path (same reference each
+  //              time -- grows in place).
+  // - `chunks` : per-subscription delivery counter (1, 2, 3, ...). Useful as
+  //              a primitive that always changes, so frameworks that bail on
+  //              referential equality (React) re-render naturally.
+  // - `done`   : true on the final delivery for this subscription only
+  //              (i.e. when the value at `path` is fully formed).
+  // - `path`   : the path stack at which the subscription matched.
+  //
+  // The wrapper itself is a fresh object per call; `data` inside is always the
+  // same in-place-mutating tree. This is intentional: it makes
+  // `setState(wrapper)` work out of the box in React without giving up the
+  // zero-allocation streaming model.
   onProgress(path, callback) {
     if (typeof callback !== 'function') throw new Error('callback must be function');
     this._subs.push({
@@ -214,6 +229,7 @@ export class StreamPicker {
           callback: s.callback,
           path: this._pathStack.slice(),
           progress: s.progress,
+          chunks: 0,
         });
       }
     }
@@ -254,7 +270,14 @@ export class StreamPicker {
       if (entry.progress) {
         // Fire on every mutation (start/end containers, primitives) but not on bare keys.
         if (b.hasRoot && event !== 'key') {
-          try { entry.callback(b.root, entry.path); }
+          entry.chunks++;
+          const wrapper = {
+            data: b.root,
+            chunks: entry.chunks,
+            done: complete,
+            path: entry.path,
+          };
+          try { entry.callback(wrapper); }
           catch (e) { for (const l of this._anyListeners) l('error', e); }
         }
         if (complete) bs.splice(i, 1);

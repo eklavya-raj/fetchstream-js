@@ -53,14 +53,11 @@ Same dataset, but using `live()` to mirror the whole document:
 <script type="module">
   import { fetchStream } from "https://esm.sh/fetchstream-js";
 
-  fetchStream("http://localhost:8787/data").live(
-    (root) => {
-      // root is the same array reference each call, growing in place
-      document.querySelector("#count").textContent =
-        `${Array.isArray(root) ? root.length : 0} items`;
-    },
-    { throttle: "raf" },
-  );
+  fetchStream("http://localhost:8787/data").live(({ data }) => {
+    // data is the same array reference each call, growing in place
+    document.querySelector("#count").textContent =
+      `${Array.isArray(data) ? data.length : 0} items`;
+  });
 </script>
 ```
 

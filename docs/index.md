@@ -22,7 +22,7 @@ hero:
 features:
   - icon: ⚛️
     title: One-line React integration
-    details: "fetchStream(url).live(setState, { throttle: 'raf' }) — the state grows as bytes arrive, one render per animation frame. No reducers, no manual rAF, no copies."
+    details: "fetchStream(url).live(setSnap) — the callback receives a fresh { data, chunks, done } wrapper, so React re-renders naturally. rAF throttling is the default in browsers."
   - icon: ⚡
     title: Instant first paint
     details: fetch and axios block until the whole body downloads. fetchstream-js renders rows while the rest is still in flight — typically 100–300× faster time-to-first-row.
@@ -70,13 +70,11 @@ render(data);
 ```js
 import { fetchStream } from "fetchstream-js";
 
-await fetchStream("/api/users").live(
-  (root) => render(root), // called as `root.users` grows
-  { throttle: "raf" }, // coalesce to one render per animation frame
-);
+await fetchStream("/api/users").live(({ data }) => render(data));
+// rAF throttling is the default in browsers; one render per animation frame.
 ```
 
-That's it — `.live()` gives you the **same object reference** every call, mutated in place. Stash it in React state and you get streaming UI with zero ceremony.
+That's it — `.live()` hands you `{ data, chunks, done, path }` each tick. `data` is the same in-place-mutating tree (zero-copy reads); the wrapper itself is fresh, so React's `setState` re-renders without spread or counters.
 
 ## React in 8 lines
 
@@ -85,16 +83,13 @@ import { fetchStream } from "fetchstream-js";
 import { useEffect, useState } from "react";
 
 export function Users() {
-  const [data, setData] = useState<any>(null);
+  const [snap, setSnap] = useState({ data: null, chunks: 0, done: false });
   useEffect(() => {
     const ac = new AbortController();
-    fetchStream("/api/users", { signal: ac.signal }).live(
-      (root) => setData({ ...root }),
-      { throttle: "raf" },
-    );
+    fetchStream("/api/users", { signal: ac.signal }).live(setSnap);
     return () => ac.abort();
   }, []);
-  return <pre>{JSON.stringify(data, null, 2)}</pre>;
+  return <pre>{JSON.stringify(snap.data, null, 2)}</pre>;
 }
 ```
 

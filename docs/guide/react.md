@@ -24,10 +24,7 @@ useEffect(() => {
 // ✅ After — fetchstream-js: state grows as bytes arrive
 useEffect(() => {
   const ac = new AbortController();
-  fetchStream("/api/products", { signal: ac.signal }).live(
-    (root) => setProducts({ ...root }),
-    { throttle: "raf" },
-  );
+  fetchStream("/api/products", { signal: ac.signal }).live(setSnap);
   return () => ac.abort();
 }, []);
 ```
@@ -36,7 +33,7 @@ Same endpoint. Same response. First row paints **~25× sooner**.
 
 ## Why this is painless in React
 
-The library's built-in `requestAnimationFrame` throttling means you don't need `useTransition`, `useDeferredValue`, a custom `useRafState`, or any reducer gymnastics. Just `useState` + `.live()` + `{ throttle: "raf" }`.
+The `.live()` callback receives a **fresh `{ data, chunks, done, path }` wrapper** each delivery, so passing it straight to `setState` re-renders without spread, `useRef`, `useReducer`, `useTransition`, `useDeferredValue`, or a custom `useRafState`. The library also defaults to `requestAnimationFrame` throttling in browsers, so you get one render per frame for free.
 
 ## Minimal example
 
@@ -45,17 +42,15 @@ import { useEffect, useState } from "react";
 import { fetchStream } from "fetchstream-js";
 
 export default function ProductList() {
-  const [products, setProducts] = useState([]);
+  const [snap, setSnap] = useState({ data: null, chunks: 0, done: false });
 
   useEffect(() => {
     const ac = new AbortController();
-    fetchStream("/api/products", { signal: ac.signal }).live(
-      (root) => setProducts([...(root.products ?? [])]),
-      { throttle: "raf" },
-    );
+    fetchStream("/api/products", { signal: ac.signal }).live(setSnap);
     return () => ac.abort();
   }, []);
 
+  const products = snap.data?.products ?? [];
   return (
     <ul>
       {products.map((p) => (
@@ -66,43 +61,7 @@ export default function ProductList() {
 }
 ```
 
-The product list grows on screen as bytes arrive, smoothly throttled to 60 fps.
-
-## Avoid array-copy on every frame
-
-Spreading `[...root.products]` on every callback creates a new array each frame. For 10k+ items you'll want a more efficient pattern:
-
-```jsx
-import { useEffect, useReducer, useRef } from "react";
-import { fetchStream } from "fetchstream-js";
-
-export default function ProductList() {
-  const dataRef = useRef([]);
-  const [, tick] = useReducer((x) => x + 1, 0);
-
-  useEffect(() => {
-    const ac = new AbortController();
-    fetchStream("/api/products", { signal: ac.signal }).live(
-      (root) => {
-        dataRef.current = root.products ?? [];
-        tick();
-      },
-      { throttle: "raf" },
-    );
-    return () => ac.abort();
-  }, []);
-
-  return (
-    <ul>
-      {dataRef.current.map((p) => (
-        <li key={p.id}>{p.name}</li>
-      ))}
-    </ul>
-  );
-}
-```
-
-The parser mutates the array **in place** — `dataRef.current` always points to the latest version. `tick()` triggers a re-render once per frame.
+The product list grows on screen as bytes arrive, smoothly throttled to 60 fps. **No spread, no `useRef`, no `useReducer`** — the wrapper itself changes reference each tick, which is what React needs to re-render. `snap.data` is the same in-place-mutating array, so reads stay zero-copy.
 
 ## Custom hook
 
@@ -111,34 +70,35 @@ Wrap the pattern in a reusable hook:
 ```ts
 // hooks/useFetchStream.ts
 "use client";
-import { useEffect, useReducer, useRef } from "react";
-import { fetchStream } from "fetchstream-js";
+import { useEffect, useState } from "react";
+import { fetchStream, type LiveSnapshot } from "fetchstream-js";
+
+const INITIAL = { data: undefined, chunks: 0, done: false, path: [] };
 
 export function useFetchStream<T = unknown>(url: string | null) {
-  const dataRef = useRef<T | undefined>(undefined);
-  const [, tick] = useReducer((x: number) => x + 1, 0);
+  const [snap, setSnap] = useState<LiveSnapshot<T | undefined>>(INITIAL);
 
   useEffect(() => {
     if (!url) return;
+    setSnap(INITIAL);
     const ac = new AbortController();
-    fetchStream(url, { signal: ac.signal }).live<T>(
-      (root) => {
-        dataRef.current = root;
-        tick();
-      },
-      { throttle: "raf" },
-    );
+    fetchStream(url, { signal: ac.signal }).live<T>(setSnap);
     return () => ac.abort();
   }, [url]);
 
-  return dataRef.current;
+  return snap;
 }
 ```
 
 ```jsx
 function App() {
-  const data = useFetchStream("/api/data");
-  return <pre>{JSON.stringify(data, null, 2)}</pre>;
+  const { data, chunks, done } = useFetchStream("/api/data");
+  return (
+    <>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+      <small>{done ? "complete" : `streaming (${chunks} updates)`}</small>
+    </>
+  );
 }
 ```
 
@@ -176,7 +136,7 @@ function ProductFeed() {
 }
 ```
 
-For most React apps, `.live()` with `throttle: "raf"` is simpler — let the library do the throttling.
+For most React apps, `.live(setSnap)` is simpler — let the library do the throttling and the re-render plumbing.
 
 ## Production-grade demo
 

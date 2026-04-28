@@ -61,17 +61,14 @@ for await (const product of fetchStream("/api/products").iterate(
 When you want the **whole document** available to a UI as it streams in:
 
 ```js
-fetchStream("/api/data").live(
-  (root) => {
-    // `root` is the same reference every call, growing in place.
-    // Shape matches your final JSON exactly — just incomplete until done.
-    render(root);
-  },
-  { throttle: "raf" },
-);
+fetchStream("/api/data").live(({ data, chunks, done }) => {
+  // `data` is the same reference every call, growing in place.
+  // Shape matches your final JSON exactly — just incomplete until `done`.
+  render(data);
+});
 ```
 
-`throttle: "raf"` coalesces parser updates into one callback per animation frame — perfect for React/Vue/Svelte.
+In browsers the callback is automatically coalesced onto `requestAnimationFrame` (one delivery per frame). In Node/SSR every parser mutation produces a delivery. Override either with `{ throttle: 50 }` or disable with `{ throttle: false }`.
 
 ## Common shapes
 

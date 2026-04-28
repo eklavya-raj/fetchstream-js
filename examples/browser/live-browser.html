@@ -79,8 +79,8 @@
     <h1>fetchstream-js — live mirror</h1>
     <p class="sub">
       The pre-block below shows the live mirror returned by
-      <code>fetchStream(url).live(root =&gt; ...)</code>. The same
-      <code>root</code>
+      <code>fetchStream(url).live(({ data }) =&gt; ...)</code>. The same
+      <code>data</code>
       reference grows in place as bytes arrive. Run
       <code>node examples/server.mjs</code> first.
     </p>
@@ -111,16 +111,17 @@
         const t0 = performance.now();
         let updates = 0;
 
-        // `{ throttle: 'raf' }` lets fetchstream-js coalesce its (potentially
-        // thousands per second) live-callback invocations into one delivery
-        // per animation frame. The final state is flushed before `await`
-        // resolves, so the post-stream render below is guaranteed accurate.
+        // The library defaults to `{ throttle: 'raf' }` in browsers, coalescing
+        // its (potentially thousands per second) live-callback invocations
+        // into one delivery per animation frame. The final state is flushed
+        // before `await` resolves, so the post-stream render below is
+        // guaranteed accurate.
         const stream = fetchStream(urlEl.value).live(
-          (root) => {
-            updates++;
-            out.textContent = JSON.stringify(root, null, 2);
+          ({ data, chunks, done }) => {
+            updates = chunks;
+            out.textContent = JSON.stringify(data, null, 2);
+            if (done) stat.textContent = `done (${chunks} live updates)`;
           },
-          { throttle: "raf" },
         );
 
         try {

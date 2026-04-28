@@ -122,22 +122,37 @@ export class StreamHandle {
     return this;
   }
 
-  // Fires repeatedly as the value at `path` grows. Callback receives the same
-  // mutable root each time it is called. Ideal for rendering a progressive
-  // JSON mirror in a UI.
+  // Fires repeatedly as the value at `path` grows. The callback receives a
+  // single fresh wrapper each tick:
+  //
+  //   { data, chunks, done, path }
+  //
+  // `data` is the in-place-mutating tree (same reference each call); `chunks`
+  // is a per-subscription delivery counter; `done` is true on the final
+  // delivery for this subscription. The wrapper itself is freshly allocated
+  // per call so React's `setState(wrapper)` triggers a re-render naturally,
+  // while the underlying `data` reference stays stable for cheap reads.
   //
   // Options:
-  //   throttle: 'raf'   -- coalesce updates and fire at most once per
-  //                        animation frame (uses requestAnimationFrame in
-  //                        the browser, ~16ms setTimeout fallback in Node).
+  //   throttle: 'raf'    -- coalesce updates and fire at most once per
+  //                         animation frame (default in browsers).
   //   throttle: <number> -- coalesce updates over that many milliseconds.
-  //   throttle: undefined/false -- fire on every parser mutation (default).
+  //   throttle: false / null -- fire on every parser mutation (default in
+  //                             Node / SSR, where requestAnimationFrame is
+  //                             not available).
   //
   // The very last update is always flushed synchronously when the stream
-  // ends, so the consumer is guaranteed to see the final state before
-  // `done` resolves.
+  // ends, so the consumer is guaranteed to see the final state (with
+  // `done: true`) before `done` resolves.
   onProgress(path, callback, options) {
-    const t = makeThrottler(callback, options && options.throttle);
+    const opts = options || {};
+    // Default to rAF throttling in browser-like environments. In Node/SSR
+    // (no requestAnimationFrame) the default stays "no throttle" so existing
+    // server code keeps observing every parser mutation synchronously.
+    const throttle = ('throttle' in opts)
+      ? opts.throttle
+      : (typeof requestAnimationFrame === 'function' ? 'raf' : null);
+    const t = makeThrottler(callback, throttle);
     if (t.tracked) this._throttlers.push(t);
     this.picker.onProgress(path, t.wrapped);
     return this;

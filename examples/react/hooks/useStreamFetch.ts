@@ -1,37 +1,41 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import {  streamJSON } from "fetchstream-js";
-import { initialMetrics, type Item, type Metrics } from "../app/types";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { streamFrom } from "fetchstream-js/node";
+import { initialMetrics, type Item, type Metrics } from "../app/types";
 
 /**
- * Streaming pattern using the headline `fetchStream(url)` API.
+ * Streaming pattern using the headline `fetchStream` / `streamFrom` API.
  *
- *   fetchStream(url, { signal })
- *     .live(cb, { throttle: 'raf' })   // library coalesces parser updates
- *                                         onto requestAnimationFrame for us.
+ *   handle.live<Item[]>((snap) => setSnap(snap))
  *
- * The library owns the `fetch()` call and the body reader; we just consume
- * the live root snapshot. To still report a wire-accurate `bytes` value (the
- * library hides the underlying `Response`), we fire a parallel HEAD request
- * for `Content-Length` + a TTFB approximation. Both are best-effort; the
- * stream itself succeeds even if the HEAD fails.
+ * `snap` is a fresh `{ data, chunks, done, path }` wrapper each tick:
+ *   - `snap.data`   : the in-place-mutating array (same reference each tick)
+ *   - `snap.chunks` : delivery counter (drives natural re-renders)
+ *   - `snap.done`   : true on the final delivery
+ *
+ * No useReducer, no manual rAF. The library defaults to `throttle: 'raf'` in
+ * browsers; the wrapper changes ref each tick so React re-renders on its own.
  */
 export function useStreamFetch() {
   const [metrics, setMetrics] = useState<Metrics>(initialMetrics);
+  // Track the live wrapper directly. setSnap(wrapper) re-renders because the
+  // wrapper is a NEW reference each tick (even though wrapper.data is stable).
+  const [snap, setSnap] = useState<{ data: Item[]; chunks: number; done: boolean }>({
+    data: [],
+    chunks: 0,
+    done: false,
+  });
   const dataRef = useRef<Item[]>([]);
-  // useReducer to force a re-render on each rAF-throttled mutation without
-  // copying the whole array (the parser mutates `dataRef.current` in place).
-  const [, tick] = useReducer((x: number) => x + 1, 0);
+  dataRef.current = snap.data;
+
   const abortRef = useRef<AbortController | null>(null);
 
   const reset = useCallback(() => {
     abortRef.current?.abort();
     abortRef.current = null;
-    dataRef.current = [];
+    setSnap({ data: [], chunks: 0, done: false });
     setMetrics(initialMetrics);
-    tick();
   }, []);
 
   const abort = useCallback(() => {
@@ -43,46 +47,40 @@ export function useStreamFetch() {
     const ac = new AbortController();
     abortRef.current = ac;
 
-    dataRef.current = [];
+    setSnap({ data: [], chunks: 0, done: false });
     setMetrics({ ...initialMetrics, status: "running" });
-    tick();
 
     const t0 = performance.now();
     let firstItemSeen = false;
 
-
     const res = await fetch(url, { signal: ac.signal, cache: "no-store" });
-    //save max size of response
     const cl = Number(res.headers.get("content-length"));
     const bytes =
       Number.isFinite(cl) && cl > 0
         ? cl
         : new TextEncoder().encode(JSON.stringify(res.body)).byteLength;
 
-
     const handle = streamFrom(res.body!);
 
-    handle.live<Item[]>(
-      (root) => {
-        dataRef.current = Array.isArray(root) ? root : [];
-        const len = dataRef.current.length;
-        if (!firstItemSeen && len > 0) {
-          firstItemSeen = true;
-          const ttfiMs = performance.now() - t0;
-          setMetrics((m) => ({ ...m, ttfiMs, itemsRendered: len }));
-        } else {
-          setMetrics((m) =>
-            m.itemsRendered === len ? m : { ...m, itemsRendered: len },
-          );
-        }
-        tick();
-      },
-      { throttle: "raf" },
-    );
+    handle.live<Item[]>((wrapper) => {
+      // Pass the wrapper straight to setState. New ref => React re-renders.
+      // wrapper.data is stable, so existing children that closed over old
+      // wrappers' data still see live values.
+      setSnap(wrapper as { data: Item[]; chunks: number; done: boolean });
+      const len = Array.isArray(wrapper.data) ? wrapper.data.length : 0;
+      if (!firstItemSeen && len > 0) {
+        firstItemSeen = true;
+        const ttfiMs = performance.now() - t0;
+        setMetrics((m) => ({ ...m, ttfiMs, itemsRendered: len }));
+      } else {
+        setMetrics((m) =>
+          m.itemsRendered === len ? m : { ...m, itemsRendered: len },
+        );
+      }
+    });
 
     try {
       await handle;
-
       setMetrics((m) => ({
         ...m,
         status: "done",
@@ -90,7 +88,6 @@ export function useStreamFetch() {
         totalMs: performance.now() - t0,
         itemsRendered: dataRef.current.length,
       }));
-      tick();
     } catch (e) {
       if (ac.signal.aborted) {
         setMetrics((m) => ({ ...m, status: "aborted" }));

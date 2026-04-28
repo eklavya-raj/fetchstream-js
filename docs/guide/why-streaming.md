@@ -18,7 +18,7 @@ const { data } = await axios.get("/api/users"); // ⏳
 render(data);
 
 // fetchstream-js — renders as bytes arrive
-fetchStream("/api/users").live((root) => render(root), { throttle: "raf" });
+fetchStream("/api/users").live(({ data }) => render(data));
 ```
 
 Same endpoint. Same response. Same network. Only one of them lets your user see rows before the download finishes.

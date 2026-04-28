@@ -31,15 +31,15 @@ export type PathStack = readonly PathSegment[];
  * Throttle strategy for `live()` / `onProgress()`.
  *
  *  - `'raf'`     — coalesce updates and fire at most once per animation frame
- *                  (`requestAnimationFrame` in browsers, ~16 ms `setTimeout`
- *                  fallback in Node/SSR).
+ *                  (`requestAnimationFrame`). **Default in browsers.**
  *  - `<number>`  — coalesce over N milliseconds (`setTimeout(fn, N)`).
- *  - `false`/`undefined` — no throttling; fire on every parser mutation.
+ *  - `false`/`null` — no throttling; fire on every parser mutation.
+ *                     **Default in Node / SSR** (no rAF available).
  *
  * The final value is always flushed synchronously when the stream ends, so
  * consumers never miss the terminal state.
  */
-export type ThrottleOption = 'raf' | number | false | undefined;
+export type ThrottleOption = 'raf' | number | false | null | undefined;
 
 export interface ProgressOptions {
   throttle?: ThrottleOption;
@@ -52,8 +52,25 @@ export interface ProgressOptions {
 export type MatchCallback<T = JSONValue> =
   (value: T, path: PathStack) => void;
 
+/**
+ * The fresh wrapper passed to `live()` / `onProgress()` callbacks on every
+ * delivery. Pass it directly to `setState` in React: the outer wrapper is a
+ * new reference each tick (so React re-renders), while `data` inside is the
+ * same in-place-mutating tree (so reads stay zero-copy).
+ */
+export interface LiveSnapshot<T = JSONValue> {
+  /** The current value at the subscribed path. Same reference each tick; mutates in place. */
+  readonly data: T;
+  /** Per-subscription delivery counter. Starts at 1 on the first callback and increments. */
+  readonly chunks: number;
+  /** `true` only on the final delivery for this subscription (the value at `path` is fully formed). */
+  readonly done: boolean;
+  /** The path stack at which this subscription matched. */
+  readonly path: PathStack;
+}
+
 export type ProgressCallback<T = JSONValue> =
-  (root: T, path: PathStack) => void;
+  (snapshot: LiveSnapshot<T>) => void;
 
 // ---------------------------------------------------------------------------
 // StreamHandle — return value of fetchStream / streamJSON / streamFrom
@@ -71,11 +88,14 @@ export class StreamHandle implements PromiseLike<void> {
 
   /**
    * Subscribe to a path. The callback fires REPEATEDLY as the value at
-   * `path` grows. The callback receives the same mutable reference each
-   * time -- it grows in place.
+   * `path` grows. Each call receives a fresh `{ data, chunks, done, path }`
+   * wrapper -- safe to pass straight to React's `setState` while still
+   * benefiting from the underlying mutate-in-place tree.
    *
-   * `options.throttle` can be `'raf'` or a millisecond number to coalesce
-   * updates. The final value is always flushed before `done` resolves.
+   * `options.throttle` defaults to `'raf'` in browsers (one delivery per
+   * animation frame) and to no throttle in Node / SSR. The final value is
+   * always flushed before `done` resolves, with `done: true` set on the
+   * wrapper.
    */
   onProgress<T = JSONValue>(
     path: string,
@@ -85,7 +105,8 @@ export class StreamHandle implements PromiseLike<void> {
 
   /**
    * Sugar for `onProgress('$', cb, options)` — a live mirror of the whole
-   * document. `root` grows in place each time the callback fires.
+   * document. The callback receives a fresh `{ data, chunks, done, path }`
+   * wrapper each call; `data` is the in-place-mutating root.
    */
   live<T = JSONValue>(
     callback: ProgressCallback<T>,

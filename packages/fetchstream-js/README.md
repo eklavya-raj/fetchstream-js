@@ -15,11 +15,11 @@ render(data);
 
 // ✅ fetchstream-js — renders as bytes arrive, first row in ~120 ms
 import { fetchStream } from "fetchstream-js";
-fetchStream("/api/users").live((root) => render(root), { throttle: "raf" });
+fetchStream("/api/users").live(({ data }) => render(data));
 ```
 
 - **Same signature as `fetch()`.** Takes a URL + `RequestInit`. Uses `AbortController`. If you know `fetch`, you're done.
-- **One-line React integration.** `.live(setState, { throttle: "raf" })` — the library coalesces parser updates to one render per animation frame.
+- **One-line React integration.** `.live(setState)` — the callback receives a fresh `{ data, chunks, done }` wrapper, so React re-renders naturally. rAF throttling is the default in browsers.
 - **Pure JavaScript, zero dependencies, ~12 KB** unminified. Works in browsers and Node 18+ with no build step.
 - **Plain `application/json`** — not just NDJSON / JSON Lines. Works with the JSON your existing APIs already return.
 - **Selective materialization**: subscribe to JSONPath-lite expressions like `$.users.*` and only those subtrees are built — the rest is parsed but skipped.
@@ -52,20 +52,17 @@ import { fetchStream } from "fetchstream-js";
 import { useEffect, useState } from "react";
 
 export function Users() {
-  const [data, setData] = useState(null);
+  const [snap, setSnap] = useState({ data: null, chunks: 0, done: false });
   useEffect(() => {
     const ac = new AbortController();
-    fetchStream("/api/users", { signal: ac.signal }).live(
-      (root) => setData({ ...root }),
-      { throttle: "raf" },
-    );
+    fetchStream("/api/users", { signal: ac.signal }).live(setSnap);
     return () => ac.abort();
   }, []);
-  return <pre>{JSON.stringify(data, null, 2)}</pre>;
+  return <pre>{JSON.stringify(snap.data, null, 2)}</pre>;
 }
 ```
 
-No reducers, no `useRef` gymnastics, no manual `requestAnimationFrame`. The library already coalesces updates to one render per frame. See the [React guide](https://eklavya-raj.github.io/fetchstream-js/guide/react) for list/cards/hooks patterns.
+No spread, no reducers, no `useRef` gymnastics, no manual `requestAnimationFrame`. The callback receives a fresh `{ data, chunks, done, path }` wrapper each tick (so `setSnap` re-renders), while `snap.data` is the same in-place-mutating tree (so reads stay zero-copy). The library already coalesces updates to one render per frame in browsers. See the [React guide](https://eklavya-raj.github.io/fetchstream-js/guide/react) for list/cards/hooks patterns.
 
 ---
 
@@ -142,9 +139,20 @@ await s;
 ## Live mirror mode (`live` / `onProgress` / `snapshot`)
 
 If you want the _whole_ JSON document available on the UI **as it streams in**,
-use `live(callback)`. The callback receives a single mutable `root` object
-that grows in place; each call gives you the latest partial tree, with the
-exact same shape your final document will have.
+use `live(callback)`. The callback receives a fresh wrapper:
+
+```ts
+{
+  data:   T,        // the live mutating tree (same reference each tick)
+  chunks: number,   // per-subscription delivery counter (1, 2, 3, ...)
+  done:   boolean,  // true on the final delivery for this subscription
+  path:   PathStack // where this subscription matched
+}
+```
+
+`data` mutates in place across ticks (zero-copy, O(1) updates). The wrapper
+itself is freshly allocated each tick, so passing it directly to React's
+`setState` works without spreading or version counters.
 
 ### 1. Root object with keyed entries
 
@@ -158,10 +166,10 @@ Streamed JSON:
 }
 ```
 
-What `root` looks like over time:
+What `data` looks like over time:
 
 ```js
-fetchStream(url).live((root) => {
+fetchStream(url).live(({ data }) => {
   // 1st commit: { user1: { name: "Alex", age: 22 } }
   // 2nd commit: { user1: {...},          user2: { name: "Sam", age: 25 } }
   // 3rd commit: { user1: {...}, user2: {...}, user3: { name: "John", age: 28 } }
@@ -180,10 +188,10 @@ Streamed JSON:
 ]
 ```
 
-What `root` looks like over time:
+What `data` looks like over time:
 
 ```js
-fetchStream(url).live((root) => {
+fetchStream(url).live(({ data }) => {
   // 1st commit: [{ name: "Alex", age: 22 }]
   // 2nd commit: [{ name: "Alex", age: 22 }, { name: "Sam", age: 25 }]
   // 3rd commit: [{ name: "Alex", age: 22 }, { name: "Sam", age: 25 }, { name: "John", age: 28 }]
@@ -202,10 +210,10 @@ Streamed JSON:
 }
 ```
 
-What `root` looks like over time:
+What `data` looks like over time:
 
 ```js
-fetchStream(url).live((root) => {
+fetchStream(url).live(({ data }) => {
   // First visible "complete shape":
   //   { students: [{ name: "Alex" }] }
   // Then:
@@ -224,44 +232,46 @@ fetchStream(url).live((root) => {
 | `.onProgress('$.path', cb, options?)` | every mutation of just the subtree at `$.path` (e.g. `$.students` grows independently) |
 | `.snapshot`                           | getter — reach in and read the current tree at any time, even after `await`            |
 
-The same `root` reference is given to you on every call, so you can stash it
-once and just trigger a re-render.
+The same `data` reference is handed to you on every call, so you can read
+through it freely. The wrapper is fresh each tick — perfect for `setState`.
 
-### Built-in `requestAnimationFrame` throttling
+### Built-in `requestAnimationFrame` throttling (default in browsers)
 
 For very fast streams, every byte boundary can produce a parser mutation —
-that's far more often than a UI needs to re-render. Pass `{ throttle: 'raf' }`
-and `fetchstream-js` will coalesce updates so your callback fires at most once
-per animation frame (`requestAnimationFrame` in browsers, ~16ms `setTimeout`
-fallback in Node/SSR). The very last update is always flushed synchronously
-when the stream ends, so the consumer is guaranteed to observe the final
-state before `done` resolves.
+that's far more often than a UI needs to re-render. **In browsers,
+`fetchstream-js` defaults to `{ throttle: 'raf' }`** so your callback fires
+at most once per animation frame. The very last update is always flushed
+synchronously when the stream ends, so the consumer is guaranteed to observe
+the final state (with `done: true`) before `done` resolves.
+
+In Node / SSR (no `requestAnimationFrame`), the default is no throttle: every
+parser mutation produces a delivery, which is what server-side consumers
+typically want.
 
 ```js
-fetchStream(url).live((root) => render(root), { throttle: "raf" });
+// Browser: rAF throttling is automatic.
+fetchStream(url).live(({ data }) => render(data));
 
-// Or: a fixed millisecond budget instead of rAF
-fetchStream(url).live((root) => render(root), { throttle: 50 });
+// Override to a fixed millisecond budget:
+fetchStream(url).live(({ data }) => render(data), { throttle: 50 });
+
+// Disable throttling entirely (fire on every mutation):
+fetchStream(url).live(({ data }) => render(data), { throttle: false });
 
 // Same option on subtree progress callbacks:
-fetchStream(url).onProgress("$.products", (arr) => render(arr), {
-  throttle: "raf",
-});
+fetchStream(url).onProgress("$.products", ({ data: arr }) => render(arr));
 ```
 
 ```jsx
-// React example -- no useRef / useReducer / manual rAF needed.
+// React example -- no useRef / useReducer / manual rAF / spread needed.
 function App() {
-  const [snap, setSnap] = useState({ root: undefined });
+  const [snap, setSnap] = useState({ data: undefined, chunks: 0, done: false });
   useEffect(() => {
     const ac = new AbortController();
-    fetchStream("/api/data", { signal: ac.signal }).live(
-      (root) => setSnap({ root }),
-      { throttle: "raf" },
-    );
+    fetchStream("/api/data", { signal: ac.signal }).live(setSnap);
     return () => ac.abort();
   }, []);
-  return <pre>{JSON.stringify(snap.root, null, 2)}</pre>;
+  return <pre>{JSON.stringify(snap.data, null, 2)}</pre>;
 }
 ```
 
@@ -354,18 +364,18 @@ producing `Uint8Array` / `Buffer` / `string`.
 
 ### `StreamHandle`
 
-| Member                            | Description                                                                                                                              |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `.on(path, callback)`             | Subscribe to a path. `callback(value, path)` fires once per fully-formed match.                                                          |
-| `.onProgress(path, cb, options?)` | Subscribe to a path; `cb(root, path)` fires on every mutation as the subtree grows. `options.throttle` may be `'raf'` or a number of ms. |
-| `.live(cb, options?)`             | Sugar for `.onProgress('$', cb, options)` — a live mirror of the whole document.                                                         |
-| `.snapshot`                       | Getter for the current partial (or final) live root.                                                                                     |
-| `.iterate(path)`                  | Returns an `AsyncIterable` that yields each match.                                                                                       |
-| `.feed(uint8Array)`               | Push more bytes into the parser.                                                                                                         |
-| `.feedText(string)`               | Convenience: encode + feed.                                                                                                              |
-| `.end()`                          | Finalize the stream.                                                                                                                     |
-| `.then` / `.catch` / `.finally`   | Awaitable; resolves when the stream ends.                                                                                                |
-| `.done`                           | The underlying Promise.                                                                                                                  |
+| Member                            | Description                                                                                                                                                                        |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.on(path, callback)`             | Subscribe to a path. `callback(value, path)` fires once per fully-formed match.                                                                                                    |
+| `.onProgress(path, cb, options?)` | Subscribe to a path; `cb({ data, chunks, done, path })` fires on every mutation as the subtree grows. `options.throttle` defaults to `'raf'` in browsers; pass `false` to disable. |
+| `.live(cb, options?)`             | Sugar for `.onProgress('$', cb, options)` — a live mirror of the whole document.                                                                                                   |
+| `.snapshot`                       | Getter for the current partial (or final) live root.                                                                                                                               |
+| `.iterate(path)`                  | Returns an `AsyncIterable` that yields each match.                                                                                                                                 |
+| `.feed(uint8Array)`               | Push more bytes into the parser.                                                                                                                                                   |
+| `.feedText(string)`               | Convenience: encode + feed.                                                                                                                                                        |
+| `.end()`                          | Finalize the stream.                                                                                                                                                               |
+| `.then` / `.catch` / `.finally`   | Awaitable; resolves when the stream ends.                                                                                                                                          |
+| `.done`                           | The underlying Promise.                                                                                                                                                            |
 
 ### `parse(text) -> JSONValue`
 

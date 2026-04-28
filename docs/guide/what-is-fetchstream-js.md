@@ -31,12 +31,10 @@ For a 5 MB JSON list over a real network, that's a **3-second blank screen** bef
 // ✅ Renders as bytes arrive — first row in ~120 ms
 import { fetchStream } from "fetchstream-js";
 
-await fetchStream("/api/products").live((root) => render(root), {
-  throttle: "raf",
-});
+await fetchStream("/api/products").live(({ data }) => render(data));
 ```
 
-`.live()` is the headline API: it gives you the **same object reference** every call, mutated in place as the JSON tree grows. Perfect for React / Vue / Svelte state.
+`.live()` is the headline API: it hands you a fresh `{ data, chunks, done, path }` wrapper each tick. `data` is the same in-place-mutating tree (zero-copy reads); the outer wrapper is a new reference each time, so it slots straight into React/Vue/Svelte state.
 
 ## Use it exactly like fetch
 
@@ -48,7 +46,7 @@ fetchStream("/api/products", {
   method: "GET",
   headers: { authorization: "Bearer …" },
   signal: ac.signal,
-}).live(setState, { throttle: "raf" });
+}).live(setSnap);
 
 // later…
 ac.abort();
@@ -66,13 +64,13 @@ ac.abort();
 
 ### 1. `.live()` — the easy one (start here)
 
-A single `root` object grows in place as the document streams in. Pass it to React state and you're done.
+A single `data` value grows in place as the document streams in, wrapped in a fresh `{ data, chunks, done, path }` outer object each tick. Pass the wrapper straight to React state and you're done.
 
 ```js
-fetchStream(url).live((root) => setState(root), { throttle: "raf" });
+fetchStream(url).live(setSnap);
 ```
 
-Built-in `requestAnimationFrame` throttling means one re-render per frame even if the parser mutates the tree thousands of times per second.
+Built-in `requestAnimationFrame` throttling (default in browsers) means one re-render per frame even if the parser mutates the tree thousands of times per second.
 
 ### 2. `.on(path, cb)` — per-match callbacks
 

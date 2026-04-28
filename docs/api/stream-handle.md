@@ -42,29 +42,34 @@ See [Per-match callbacks](/guide/on-matches).
 
 ### `.onProgress(path, callback, options?)`
 
-Fires on **every mutation** of the subtree at `path` — including its descendants.
+Fires on **every mutation** of the subtree at `path` — including its descendants. The callback receives a fresh `{ data, chunks, done, path }` wrapper each tick.
 
 ```js
-handle.onProgress("$.products", (products) => render(products), {
-  throttle: "raf",
+handle.onProgress("$.products", ({ data: products, done }) => {
+  render(products);
+  if (done) console.log("products subtree complete");
 });
 ```
 
+`options.throttle` defaults to `'raf'` in browsers and to no throttle in Node/SSR. Pass `{ throttle: 50 }` for a fixed millisecond cadence or `{ throttle: false }` to disable.
+
 Options:
 
-- `throttle: "raf"` — coalesce updates to one per animation frame
+- `throttle: "raf"` — coalesce updates to one per animation frame (default in browsers)
 - `throttle: number` — coalesce to one per `<n>` ms
+- `throttle: false` — disable throttling (default in Node/SSR)
 
-The `value` argument is a **live mutable reference** — the same object across all calls — that grows in place.
+The `data` field of the wrapper is a **live mutable reference** — the same object across all calls — that grows in place. The wrapper itself is fresh each tick, so it can be passed directly to React's `setState`.
 
 ---
 
 ### `.live(callback, options?)`
 
-Sugar for `.onProgress("$", callback, options)`. Mirrors the entire document.
+Sugar for `.onProgress("$", callback, options)`. Mirrors the entire document. The callback receives the same `{ data, chunks, done, path }` wrapper — safe to pass straight to React's `setState`.
 
 ```js
-handle.live((root) => render(root), { throttle: "raf" });
+handle.live(({ data }) => render(data));
+// or in React:  handle.live(setSnap);
 ```
 
 See [Live mirror mode](/guide/live-mode).
@@ -118,6 +123,8 @@ A getter that returns the current root of the live mirror, even outside the `.li
 
 ```js
 const stream = fetchStream(url).live(() => {});
+// reading via stream.snapshot returns the inner mutating tree directly
+// (equivalent to wrapper.data inside the callback)
 
 setInterval(() => {
   console.log("current root:", stream.snapshot);
