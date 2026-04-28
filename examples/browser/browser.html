@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>fetchstream — browser demo</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    h1 { margin-bottom: 0.25rem; }
+    .sub { color: #666; margin-top: 0; }
+    .row { display: flex; gap: 1rem; align-items: center; margin: 1rem 0; }
+    button {
+      padding: 8px 16px;
+      font: inherit;
+      border-radius: 6px;
+      border: 1px solid #888;
+      cursor: pointer;
+      background: #f5f5f5;
+    }
+    button:disabled { opacity: 0.5; cursor: progress; }
+    .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .pane {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 320px;
+      max-height: 520px;
+      overflow: auto;
+      background: #fafafa;
+      font-variant-numeric: tabular-nums;
+    }
+    .pane h2 { margin: 0 0 8px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; color: #666; }
+    .item {
+      padding: 4px 6px;
+      border-radius: 4px;
+      margin: 2px 0;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 12px;
+      animation: pop 0.3s ease;
+    }
+    @keyframes pop {
+      from { background: #ffe28a; transform: translateX(-4px); }
+      to { background: transparent; transform: none; }
+    }
+    .meta { color: #06c; }
+    .stat { font-weight: 600; }
+    .firstAt { color: #d63; }
+    code { background: #eee; padding: 1px 4px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>fetchstream</h1>
+  <p class="sub">
+    Streams <code>application/json</code> as bytes arrive. The left pane uses
+    <code>JSON.parse</code> after the full body downloads. The right pane uses
+    <code>fetchStream</code> to receive each <code>results[*]</code> item as soon as
+    its closing <code>}</code> arrives. Run <code>node examples/server.mjs</code>
+    first, then click "Start".
+  </p>
+
+  <div class="row">
+    <label>URL: <input id="url" value="http://localhost:8787/data" size="40"></label>
+    <button id="go">Start</button>
+    <span id="status"></span>
+  </div>
+
+  <div class="panes">
+    <div class="pane">
+      <h2>JSON.parse (waits for full body)</h2>
+      <div id="left"></div>
+    </div>
+    <div class="pane">
+      <h2>fetchStream <code>$.results.*</code></h2>
+      <div id="right"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { fetchStream } from '../../packages/fetchstream/src/index.js';
+
+    const left = document.getElementById('left');
+    const right = document.getElementById('right');
+    const status = document.getElementById('status');
+    const btn = document.getElementById('go');
+    const urlEl = document.getElementById('url');
+
+    function row(text, cls = 'item') {
+      const div = document.createElement('div');
+      div.className = cls;
+      div.textContent = text;
+      return div;
+    }
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      left.innerHTML = '';
+      right.innerHTML = '';
+      status.textContent = 'streaming...';
+
+      const url = urlEl.value;
+      const t0 = performance.now();
+
+      // Right pane: streaming with fetchstream
+      const rightFirst = right.appendChild(row('first item @  ⏳', 'item firstAt'));
+      let rightCount = 0;
+      let rightFirstAt = -1;
+
+      const streamPromise = fetchStream(url)
+        .on('$.totalItems', n => {
+          right.appendChild(row('envelope.totalItems = ' + n, 'item meta'));
+        })
+        .on('$.results.*', item => {
+          if (rightFirstAt < 0) {
+            rightFirstAt = performance.now() - t0;
+            rightFirst.textContent = `first item @ ${rightFirstAt.toFixed(0)} ms`;
+          }
+          rightCount++;
+          right.appendChild(row(`#${rightCount.toString().padStart(3)} id=${item.id} ${item.name}  score=${item.score}`));
+          right.scrollTop = right.scrollHeight;
+        })
+        .on('$.meta', meta => {
+          right.appendChild(row('envelope.meta = ' + JSON.stringify(meta), 'item meta'));
+        });
+
+      // Left pane: simulate the JSON.parse path (download then parse).
+      const downloadPromise = (async () => {
+        const res = await fetch(url);
+        const text = await res.text();
+        const tDownloaded = performance.now() - t0;
+        left.appendChild(row(`fetched all bytes @ ${tDownloaded.toFixed(0)} ms`, 'item firstAt'));
+        const obj = JSON.parse(text);
+        const tParsed = performance.now() - t0;
+        left.appendChild(row(`JSON.parse done   @ ${tParsed.toFixed(0)} ms`, 'item firstAt'));
+        for (let i = 0; i < obj.results.length; i++) {
+          const item = obj.results[i];
+          left.appendChild(row(`#${(i+1).toString().padStart(3)} id=${item.id} ${item.name}  score=${item.score}`));
+        }
+        return tDownloaded;
+      })();
+
+      try {
+        const [_, dl] = await Promise.all([streamPromise, downloadPromise]);
+        const totalRight = performance.now() - t0;
+        right.appendChild(row(`done @ ${totalRight.toFixed(0)} ms (${rightCount} items)`, 'item stat'));
+        status.textContent = `Streaming gave the first item ~${(dl - rightFirstAt).toFixed(0)} ms before JSON.parse could even start.`;
+      } catch (e) {
+        status.textContent = 'error: ' + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

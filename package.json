@@ -1,0 +1,26 @@
+{
+  "name": "fetchstream-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Monorepo for the fetchstream library and its examples",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  },
+  "scripts": {
+    "test": "pnpm -F fetchstream run test",
+    "test:all": "pnpm -r --if-present run test",
+    "bench": "pnpm -F fetchstream run bench",
+    "build:react": "pnpm -F @fetchstream/react-vite-example run build",
+    "dev:react": "pnpm -F @fetchstream/react-vite-example run dev",
+    "demo:server": "pnpm -F @fetchstream/node-examples run server",
+    "demo:node": "pnpm -F @fetchstream/node-examples run start",
+    "demo:live": "pnpm -F @fetchstream/node-examples run live",
+    "clean": "pnpm -r exec rimraf node_modules dist .vite && rimraf node_modules"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.10"
+  }
+}

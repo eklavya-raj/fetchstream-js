@@ -1,0 +1,76 @@
+{
+  "name": "fetchstream",
+  "version": "0.1.0",
+  "description": "High-performance streaming JSON parser for application/json. Emits values as soon as bytes arrive, no need to wait for the full response.",
+  "type": "module",
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./node": {
+      "types": "./src/node.d.ts",
+      "import": "./src/node.js",
+      "default": "./src/node.js"
+    },
+    "./parser": {
+      "types": "./src/parser.d.ts",
+      "import": "./src/parser.js",
+      "default": "./src/parser.js"
+    },
+    "./picker": {
+      "types": "./src/picker.d.ts",
+      "import": "./src/picker.js",
+      "default": "./src/picker.js"
+    },
+    "./path": {
+      "types": "./src/path.d.ts",
+      "import": "./src/path.js",
+      "default": "./src/path.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "bench": "node bench/bench.mjs",
+    "prepublishOnly": "node --test \"test/*.test.js\""
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "json",
+    "streaming",
+    "stream",
+    "parser",
+    "fetch",
+    "sax",
+    "incremental",
+    "performance",
+    "jsonpath"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "author": "Eklavya Raj <eklavya> (https://github.com/eklavya-raj)",
+  "homepage": "https://github.com/eklavya-raj/fetchstream#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eklavya-raj/fetchstream.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eklavya-raj/fetchstream/issues"
+  }
+}

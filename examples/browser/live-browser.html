@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>fetchstream — live mirror demo</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      max-width: 980px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+    h1 { margin: 0 0 0.25rem; }
+    .sub { color: #666; margin-top: 0; }
+    .row { display: flex; gap: 1rem; align-items: center; margin: 1rem 0; }
+    button {
+      padding: 8px 16px; font: inherit; border-radius: 6px;
+      border: 1px solid #888; cursor: pointer; background: #f5f5f5;
+    }
+    button:disabled { opacity: 0.5; cursor: progress; }
+    .stat { color: #666; }
+    pre {
+      background: #fafafa; border: 1px solid #ddd; border-radius: 6px;
+      padding: 12px; max-height: 70vh; overflow: auto;
+      font: 12px/1.5 ui-monospace, SFMono-Regular, monospace;
+      white-space: pre;
+    }
+    .new {
+      background: linear-gradient(180deg, #fff3a8 0%, transparent 100%);
+      animation: fade 0.6s ease forwards;
+    }
+    @keyframes fade { to { background: transparent; } }
+    code { background: #eee; padding: 1px 4px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>fetchstream — live mirror</h1>
+  <p class="sub">
+    The pre-block below shows the live mirror returned by
+    <code>fetchStream(url).live(root =&gt; ...)</code>. The same <code>root</code>
+    reference grows in place as bytes arrive. Run
+    <code>node examples/server.mjs</code> first.
+  </p>
+
+  <div class="row">
+    <label>URL: <input id="url" value="http://localhost:8787/data" size="40"></label>
+    <button id="go">Start</button>
+    <span id="stat" class="stat"></span>
+  </div>
+
+  <pre id="out">{ }</pre>
+
+  <script type="module">
+    import { fetchStream } from '../../packages/fetchstream/src/index.js';
+
+    const out = document.getElementById('out');
+    const stat = document.getElementById('stat');
+    const btn = document.getElementById('go');
+    const urlEl = document.getElementById('url');
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      out.textContent = '{ }';
+      stat.textContent = '...streaming...';
+
+      const t0 = performance.now();
+      let updates = 0;
+
+      // `{ throttle: 'raf' }` lets fetchstream coalesce its (potentially
+      // thousands per second) live-callback invocations into one delivery
+      // per animation frame. The final state is flushed before `await`
+      // resolves, so the post-stream render below is guaranteed accurate.
+      const stream = fetchStream(urlEl.value).live((root) => {
+        updates++;
+        out.textContent = JSON.stringify(root, null, 2);
+      }, { throttle: 'raf' });
+
+      try {
+        await stream;
+        out.textContent = JSON.stringify(stream.snapshot, null, 2);
+        stat.textContent = `done in ${(performance.now() - t0).toFixed(0)} ms (${updates} live updates)`;
+      } catch (e) {
+        stat.textContent = 'error: ' + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
