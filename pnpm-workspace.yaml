@@ -13,6 +13,4 @@ packages:
 # Bumps are minor/patch-level within the existing major ranges that
 # vitepress and next already accept, so no breaking-change risk.
 overrides:
-  esbuild: ">=0.25.0"
-  vite: ">=6.4.2"
   postcss: ">=8.5.10"

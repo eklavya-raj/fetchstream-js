@@ -26,6 +26,8 @@ export function useStreamFetch() {
     chunks: 0,
     done: false,
   });
+
+  console.log("snap", snap);
   const dataRef = useRef<Item[]>([]);
   dataRef.current = snap.data;
 
@@ -54,6 +56,7 @@ export function useStreamFetch() {
     let firstItemSeen = false;
 
     const res = await fetch(url, { signal: ac.signal, cache: "no-store" });
+    const ttfbMs = performance.now() - t0;
     const cl = Number(res.headers.get("content-length"));
     const bytes =
       Number.isFinite(cl) && cl > 0
@@ -66,7 +69,7 @@ export function useStreamFetch() {
       // Pass the wrapper straight to setState. New ref => React re-renders.
       // wrapper.data is stable, so existing children that closed over old
       // wrappers' data still see live values.
-      setSnap(wrapper as { data: Item[]; chunks: number; done: boolean });
+      setSnap(wrapper);
       const len = Array.isArray(wrapper.data) ? wrapper.data.length : 0;
       if (!firstItemSeen && len > 0) {
         firstItemSeen = true;
@@ -85,6 +88,7 @@ export function useStreamFetch() {
         ...m,
         status: "done",
         bytes,
+        ttfbMs,
         totalMs: performance.now() - t0,
         itemsRendered: dataRef.current.length,
       }));
