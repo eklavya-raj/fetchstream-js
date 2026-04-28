@@ -39,11 +39,11 @@ Streaming 20 000 items in 16 KiB chunks, throttled to 4 ms per chunk (≈3.2 MB 
 | Approach                    | First item | Last item | Blocked UI? |
 | --------------------------- | ---------: | --------: | :---------: |
 | `fetch().json()` + render   |   ~3134 ms |   3134 ms |     yes     |
-| `fetchStream` `$.results.*` |     ~12 ms |   3116 ms |      no     |
+| `fetchStream` `$.results.*` |     ~12 ms |   3116 ms |     no      |
 
 ## When it matters
 
-Use `fetchstream` when **any** of these apply:
+Use `fetchstream-js` when **any** of these apply:
 
 - Responses are larger than ~500 KB
 - Users are on slow/mobile networks
@@ -60,16 +60,20 @@ Stick with `JSON.parse` when:
 - You already have the whole string in memory
 - Total throughput matters more than time-to-first-byte
 
-`fetchstream` isn't faster at parsing the full document — `JSON.parse` wins on raw throughput because it runs in native code. `fetchstream` wins on **perceived performance** by moving work forward in time.
+`fetchstream-js` isn't faster at parsing the full document — `JSON.parse` wins on raw throughput because it runs in native code. `fetchstream-js` wins on **perceived performance** by moving work forward in time.
 
 ## Bonus: selective materialization
 
-Because `fetchstream` knows your subscription paths, it only allocates objects for subtrees you asked for. A subscription on `$.users.*` in a response like:
+Because `fetchstream-js` knows your subscription paths, it only allocates objects for subtrees you asked for. A subscription on `$.users.*` in a response like:
 
 ```json
 {
-  "metadata": { /* 500 KB of stuff you don't care about */ },
-  "users": [ /* what you actually want */ ]
+  "metadata": {
+    /* 500 KB of stuff you don't care about */
+  },
+  "users": [
+    /* what you actually want */
+  ]
 }
 ```
 

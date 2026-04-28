@@ -2,19 +2,19 @@
 layout: home
 
 hero:
-  name: fetchstream
+  name: fetchstream-js
   text: Streaming JSON parser
   tagline: Emit values as bytes arrive — no waiting for JSON.parse on 5 MB payloads.
   image:
     src: /logo.svg
-    alt: fetchstream
+    alt: fetchstream-js
   actions:
     - theme: brand
       text: Get started
       link: /guide/getting-started
     - theme: alt
       text: View on GitHub
-      link: https://github.com/eklavya-raj/fetchstream
+      link: https://github.com/eklavya-raj/fetchstream-js
 
 features:
   - icon: ⚡
@@ -46,7 +46,7 @@ features:
 ## Quick taste
 
 ```js
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 // Each user renders as soon as its closing `}` arrives.
 await fetchStream("/api/users")
@@ -58,18 +58,21 @@ await fetchStream("/api/users")
 Or use a live mirror that matches your final document shape as it grows:
 
 ```js
-await fetchStream("/api/data").live((root) => {
-  // `root` is the same reference every call, growing in place.
-  // Perfect for React / Vue / Svelte progressive rendering.
-  render(root);
-}, { throttle: "raf" });
+await fetchStream("/api/data").live(
+  (root) => {
+    // `root` is the same reference every call, growing in place.
+    // Perfect for React / Vue / Svelte progressive rendering.
+    render(root);
+  },
+  { throttle: "raf" },
+);
 ```
 
 ## Why bother?
 
 `JSON.parse` is fast — but it requires the **entire** response before returning anything. For a 3 MB list streamed over a slow network, that's a 3-second blank screen.
 
-`fetchstream` parses byte-by-byte. By the time the first 16 KB arrives, you can already render the first dozen rows.
+`fetchstream-js` parses byte-by-byte. By the time the first 16 KB arrives, you can already render the first dozen rows.
 
 <div style="margin-top: 2rem; padding: 1rem; border: 1px solid var(--vp-c-divider); border-radius: 8px;">
 

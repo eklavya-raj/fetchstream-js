@@ -11,7 +11,7 @@ import Toolbar from "./Toolbar";
 /**
  * Orchestrates the head-to-head:
  *   - left pane:  fetch(url) -> response.json() -> render cards     (`useClassicFetch`)
- *   - right pane: fetchstream live() with raf throttle              (`useStreamFetch`)
+ *   - right pane: fetchstream-js live() with raf throttle              (`useStreamFetch`)
  *
  * Both runners are independent hooks so each pane is self-contained.
  */
@@ -77,8 +77,8 @@ export default function ComparisonDemo() {
           totalBytesHint={totalBytesHint}
         />
         <BenchmarkPane
-          title="fetchstream"
-          subtitle="streamJSON().live(cb, { throttle: 'raf' }) — cards grow as bytes arrive."
+          title="fetchstream-js"
+          subtitle="fetchstream-js .live(cb, { throttle: 'raf' }) — cards grow as bytes arrive."
           badge="Streaming"
           accent="emerald"
           metrics={stream.metrics}

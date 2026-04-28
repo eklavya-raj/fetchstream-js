@@ -1,9 +1,9 @@
-# fetchstream
+# fetchstream-js
 
 **High-performance streaming JSON parser for `application/json`.**
 Emits values as bytes arrive — no waiting for the full response.
 
-📖 **[Documentation & API reference](https://eklavya-raj.github.io/fetchstream/)**
+📖 **[Documentation & API reference](https://eklavya-raj.github.io/fetchstream-js/)**
 
 - Pure JavaScript, zero dependencies, ~12 KB unminified
 - Works with **plain `application/json`** (not just NDJSON / JSON Lines)
@@ -17,7 +17,7 @@ Emits values as bytes arrive — no waiting for the full response.
 Two complementary patterns are supported:
 
 ```js
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 // 1) Per-match callbacks: fire once per matching subtree.
 await fetchStream("/api/users")
@@ -44,7 +44,7 @@ await fetchStream("/api/users").live((root) => {
 before it can return anything. For a 3 MB JSON list streamed over a slow
 network, that's a 3-second wait before your UI sees a single row.
 
-`fetchstream` parses byte-by-byte. By the time the network has delivered the
+`fetchstream-js` parses byte-by-byte. By the time the network has delivered the
 first 16 KB, you can already render the first dozen items.
 
 ### Benchmark — 20 000 items, 16 KiB chunks @ 4 ms (~3.2 MB total)
@@ -62,7 +62,7 @@ same (we're network-bound either way) but the user sees data immediately.
 ## Install
 
 ```bash
-npm install fetchstream
+npm install fetchstream-js
 ```
 
 Requires Node 18+ (for global `fetch`) or any modern browser.
@@ -74,7 +74,7 @@ Requires Node 18+ (for global `fetch`) or any modern browser.
 ### Browser / Node — fetch a URL
 
 ```js
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 const stream = fetchStream("/api/products", {
   headers: { authorization: "Bearer ..." },
@@ -106,7 +106,7 @@ for await (const product of fetchStream("/api/products").iterate(
 ### Node — pipe a `Readable` (or any async iterable)
 
 ```js
-import { streamFrom } from "fetchstream/node";
+import { streamFrom } from "fetchstream-js/node";
 import { createReadStream } from "node:fs";
 
 await streamFrom(createReadStream("huge.json")).on("$.records.*", (record) =>
@@ -117,7 +117,7 @@ await streamFrom(createReadStream("huge.json")).on("$.records.*", (record) =>
 ### Manual feeding
 
 ```js
-import { streamJSON } from "fetchstream";
+import { streamJSON } from "fetchstream-js";
 
 const s = streamJSON();
 s.on("$.users.*", (u) => console.log(u));
@@ -221,7 +221,7 @@ once and just trigger a re-render.
 
 For very fast streams, every byte boundary can produce a parser mutation —
 that's far more often than a UI needs to re-render. Pass `{ throttle: 'raf' }`
-and `fetchstream` will coalesce updates so your callback fires at most once
+and `fetchstream-js` will coalesce updates so your callback fires at most once
 per animation frame (`requestAnimationFrame` in browsers, ~16ms `setTimeout`
 fallback in Node/SSR). The very last update is always flushed synchronously
 when the stream ends, so the consumer is guaranteed to observe the final
@@ -276,7 +276,7 @@ keeping the whole document in memory.
 
 ### Real-world shapes
 
-`fetchstream` handles every JSON shape you'd see in the wild:
+`fetchstream-js` handles every JSON shape you'd see in the wild:
 
 ```js
 // flat objects
@@ -364,27 +364,27 @@ A synchronous one-shot parse using the streaming parser. Equivalent to
 and small utilities. Prefer `JSON.parse` for raw speed on whole strings.
 
 ```js
-import { parse } from "fetchstream";
+import { parse } from "fetchstream-js";
 
 parse('{"hello": "world"}'); // -> { hello: 'world' }
 ```
 
 ### Subpath imports
 
-| Import path          | Provides                                                  |
-| -------------------- | --------------------------------------------------------- |
-| `fetchstream`        | `fetchStream`, `streamJSON`, `parse`, `StreamHandle`      |
-| `fetchstream/node`   | Everything above plus `streamFrom(source)`                |
-| `fetchstream/parser` | `JSONStreamParser` (low-level SAX)                        |
-| `fetchstream/picker` | `StreamPicker` (path-aware materializer)                  |
-| `fetchstream/path`   | `compilePath`, `matches`, `prefixMatches`, `pathToString` |
+| Import path             | Provides                                                  |
+| ----------------------- | --------------------------------------------------------- |
+| `fetchstream-js`        | `fetchStream`, `streamJSON`, `parse`, `StreamHandle`      |
+| `fetchstream-js/node`   | Everything above plus `streamFrom(source)`                |
+| `fetchstream-js/parser` | `JSONStreamParser` (low-level SAX)                        |
+| `fetchstream-js/picker` | `StreamPicker` (path-aware materializer)                  |
+| `fetchstream-js/path`   | `compilePath`, `matches`, `prefixMatches`, `pathToString` |
 
 ### Low-level: `JSONStreamParser`
 
 If you want raw SAX-style events (no path matching, no value materialization):
 
 ```js
-import { JSONStreamParser } from 'fetchstream/parser';
+import { JSONStreamParser } from 'fetchstream-js/parser';
 
 const parser = new JSONStreamParser({
   onStartObject() { … },
@@ -424,8 +424,8 @@ whole body vs `fetchStream` rendering items as they arrive.
 ## Run the tests / benchmarks
 
 ```bash
-pnpm -F fetchstream test     # or:  npm test       (inside packages/fetchstream)
-pnpm -F fetchstream bench    # or:  npm run bench
+pnpm -F fetchstream-js test     # or:  npm test       (inside packages/fetchstream-js)
+pnpm -F fetchstream-js bench    # or:  npm run bench
 ```
 
 ---

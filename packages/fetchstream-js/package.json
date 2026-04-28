@@ -1,5 +1,5 @@
 {
-  "name": "fetchstream",
+  "name": "fetchstream-js",
   "version": "0.1.0",
   "description": "High-performance streaming JSON parser for application/json. Emits values as soon as bytes arrive, no need to wait for the full response.",
   "type": "module",
@@ -65,12 +65,12 @@
   },
   "license": "MIT",
   "author": "Eklavya Raj (https://github.com/eklavya-raj)",
-  "homepage": "https://github.com/eklavya-raj/fetchstream#readme",
+  "homepage": "https://github.com/eklavya-raj/fetchstream-js#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/eklavya-raj/fetchstream.git"
+    "url": "https://github.com/eklavya-raj/fetchstream-js.git"
   },
   "bugs": {
-    "url": "https://github.com/eklavya-raj/fetchstream/issues"
+    "url": "https://github.com/eklavya-raj/fetchstream-js/issues"
   }
 }

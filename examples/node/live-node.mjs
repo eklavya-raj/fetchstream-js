@@ -6,7 +6,7 @@
 //   pnpm demo:server      # starts the slow JSON server
 //   pnpm demo:live        # runs THIS file
 
-import { fetchStream } from 'fetchstream';
+import { fetchStream } from 'fetchstream-js';
 
 const URL = process.env.URL || 'http://localhost:8787/data';
 

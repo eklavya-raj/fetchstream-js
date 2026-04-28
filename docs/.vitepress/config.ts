@@ -1,10 +1,10 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
-  title: "fetchstream",
+  title: "fetchstream-js",
   description:
     "High-performance streaming JSON parser for application/json. Emits values as bytes arrive — no waiting for the full response.",
-  base: "/fetchstream/",
+  base: "/fetchstream-js/",
   cleanUrls: true,
   lastUpdated: true,
 
@@ -12,7 +12,7 @@ export default defineConfig({
     ["link", { rel: "icon", href: "/favicon.svg" }],
     ["meta", { name: "theme-color", content: "#10b981" }],
     ["meta", { property: "og:type", content: "website" }],
-    ["meta", { property: "og:title", content: "fetchstream" }],
+    ["meta", { property: "og:title", content: "fetchstream-js" }],
     [
       "meta",
       {
@@ -24,7 +24,7 @@ export default defineConfig({
 
   themeConfig: {
     logo: { src: "/logo.svg", width: 24, height: 24 },
-    siteTitle: "fetchstream",
+    siteTitle: "fetchstream-js",
 
     nav: [
       { text: "Guide", link: "/guide/getting-started", activeMatch: "/guide/" },
@@ -35,11 +35,11 @@ export default defineConfig({
         items: [
           {
             text: "Changelog",
-            link: "https://github.com/eklavya-raj/fetchstream/blob/main/packages/fetchstream/CHANGELOG.md",
+            link: "https://github.com/eklavya-raj/fetchstream-js/blob/main/packages/fetchstream-js/CHANGELOG.md",
           },
           {
             text: "Contributing",
-            link: "https://github.com/eklavya-raj/fetchstream/blob/main/CONTRIBUTING.md",
+            link: "https://github.com/eklavya-raj/fetchstream-js/blob/main/CONTRIBUTING.md",
           },
         ],
       },
@@ -50,7 +50,7 @@ export default defineConfig({
         {
           text: "Introduction",
           items: [
-            { text: "What is fetchstream?", link: "/guide/what-is-fetchstream" },
+            { text: "What is fetchstream-js?", link: "/guide/what-is-fetchstream-js" },
             { text: "Getting started", link: "/guide/getting-started" },
             { text: "Why streaming?", link: "/guide/why-streaming" },
           ],
@@ -102,11 +102,11 @@ export default defineConfig({
     socialLinks: [
       {
         icon: "github",
-        link: "https://github.com/eklavya-raj/fetchstream",
+        link: "https://github.com/eklavya-raj/fetchstream-js",
       },
       {
         icon: "npm",
-        link: "https://www.npmjs.com/package/fetchstream",
+        link: "https://www.npmjs.com/package/fetchstream-js",
       },
     ],
 
@@ -124,7 +124,7 @@ export default defineConfig({
 
     editLink: {
       pattern:
-        "https://github.com/eklavya-raj/fetchstream/edit/main/docs/:path",
+        "https://github.com/eklavya-raj/fetchstream-js/edit/main/docs/:path",
       text: "Edit this page on GitHub",
     },
 

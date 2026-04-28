@@ -1,4 +1,4 @@
-// Type definitions for `fetchstream/node`
+// Type definitions for `fetchstream-js/node`
 //
 // Adds `streamFrom(source)` for Node Readable streams, Web ReadableStream,
 // and any async iterable producing Uint8Array / Buffer / string.
@@ -12,7 +12,7 @@ export * from './index';
  * `Uint8Array` / `Buffer` / `string` into a fresh `StreamHandle`.
  *
  * @example
- * import { streamFrom } from 'fetchstream/node';
+ * import { streamFrom } from 'fetchstream-js/node';
  * import { createReadStream } from 'node:fs';
  *
  * await streamFrom(createReadStream('huge.json'))

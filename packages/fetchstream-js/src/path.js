@@ -1,4 +1,4 @@
-// fetchstream/src/path.js
+// fetchstream-js/src/path.js
 // Compile a JSONPath-lite string into segments, plus a fast `matches()` test.
 //
 // Supported syntax:

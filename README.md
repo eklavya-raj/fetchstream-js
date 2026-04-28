@@ -1,15 +1,15 @@
-# fetchstream — monorepo
+# fetchstream-js — monorepo
 
-**Docs:** [eklavya-raj.github.io/fetchstream](https://eklavya-raj.github.io/fetchstream/)  
-**React demo:** [fetchstream.vercel.app](https://fetchstream.vercel.app/)
+**Docs:** [eklavya-raj.github.io/fetchstream-js](https://eklavya-raj.github.io/fetchstream-js/)  
+**React demo:** [fetchstream-js.vercel.app](https://fetchstream-js.vercel.app/)
 
 This repository is a [pnpm workspace](https://pnpm.io/workspaces) containing
-the **`fetchstream`** library and its runnable examples.
+the **`fetchstream-js`** library and its runnable examples.
 
 ```
-fetchstream/
+fetchstream-js/
 ├── packages/
-│   └── fetchstream/                # The library itself ── [docs](https://eklavya-raj.github.io/fetchstream/)
+│   └── fetchstream-js/                # The library itself ── [docs](https://eklavya-raj.github.io/fetchstream-js/)
 ├── examples/
 │   ├── node/                       # Node CLI demos (server + client)
 │   ├── browser/                    # Static HTML demos (no bundler)
@@ -28,14 +28,14 @@ pnpm install
 ```
 
 That single command installs the dev tooling (Vite, React, etc.) and links
-each example's `"fetchstream": "workspace:*"` dependency to the in-repo
+each example's `"fetchstream-js": "workspace:*"` dependency to the in-repo
 source — no publishing, no symlinking by hand.
 
 ## Common scripts (run from the repo root)
 
 | Command             | What it does                                                  |
 | ------------------- | ------------------------------------------------------------- |
-| `pnpm test`         | Run the library test suite (`packages/fetchstream`)           |
+| `pnpm test`         | Run the library test suite (`packages/fetchstream-js`)        |
 | `pnpm bench`        | Run the streaming-vs-`JSON.parse` benchmark                   |
 | `pnpm dev:react`    | Start the Next.js React demo on <http://localhost:3000>       |
 | `pnpm build:react`  | Production build of the React demo                            |
@@ -49,19 +49,19 @@ source — no publishing, no symlinking by hand.
 You can also drop into any workspace and use its scripts directly:
 
 ```bash
-pnpm -F fetchstream test
+pnpm -F fetchstream-js test
 pnpm -F react dev
-pnpm -F @fetchstream/node-examples server
+pnpm -F @fetchstream-js/node-examples server
 ```
 
 ## Packages
 
-| Workspace                    | Path                   | Description                                       |
-| ---------------------------- | ---------------------- | ------------------------------------------------- |
-| `fetchstream`                | `packages/fetchstream` | The streaming JSON parser library                 |
-| `@fetchstream/node-examples` | `examples/node`        | `server.mjs`, `node-example.mjs`, `live-node.mjs` |
-| `react`                      | `examples/react`       | Next.js + React 19 benchmark demo                 |
+| Workspace                       | Path                      | Description                                       |
+| ------------------------------- | ------------------------- | ------------------------------------------------- |
+| `fetchstream-js`                | `packages/fetchstream-js` | The streaming JSON parser library                 |
+| `@fetchstream-js/node-examples` | `examples/node`           | `server.mjs`, `node-example.mjs`, `live-node.mjs` |
+| `react`                         | `examples/react`          | Next.js + React 19 benchmark demo                 |
 
 The full documentation (guides, API reference, examples) is deployed at
-[eklavya-raj.github.io/fetchstream](https://eklavya-raj.github.io/fetchstream/).
-For a quick overview, see [`packages/fetchstream/README.md`](packages/fetchstream/README.md).
+[eklavya-raj.github.io/fetchstream-js](https://eklavya-raj.github.io/fetchstream-js/).
+For a quick overview, see [`packages/fetchstream-js/README.md`](packages/fetchstream-js/README.md).

@@ -3,23 +3,39 @@
 The low-level SAX parser. No path matching, no value materialization — just raw events as the byte stream is consumed.
 
 ```js
-import { JSONStreamParser } from "fetchstream/parser";
+import { JSONStreamParser } from "fetchstream-js/parser";
 ```
 
 ## Usage
 
 ```js
-import { JSONStreamParser } from "fetchstream/parser";
+import { JSONStreamParser } from "fetchstream-js/parser";
 
 const parser = new JSONStreamParser({
-  onStartObject() { /* ... */ },
-  onEndObject()   { /* ... */ },
-  onStartArray()  { /* ... */ },
-  onEndArray()    { /* ... */ },
-  onKey(name)     { /* ... */ },
-  onValue(value)  { /* string | number | boolean | null */ },
-  onEnd()         { /* ... */ },
-  onError(err)    { /* ... */ },
+  onStartObject() {
+    /* ... */
+  },
+  onEndObject() {
+    /* ... */
+  },
+  onStartArray() {
+    /* ... */
+  },
+  onEndArray() {
+    /* ... */
+  },
+  onKey(name) {
+    /* ... */
+  },
+  onValue(value) {
+    /* string | number | boolean | null */
+  },
+  onEnd() {
+    /* ... */
+  },
+  onError(err) {
+    /* ... */
+  },
 });
 
 parser.write(uint8ArrayChunk);
@@ -37,16 +53,16 @@ You almost certainly want [`fetchStream`](/api/fetch-stream) or [`streamJSON`](/
 
 ## Event semantics
 
-| Event | Fires when |
-| ----- | ---------- |
-| `onStartObject` | Parser sees `{` |
-| `onEndObject` | Parser sees `}` |
-| `onStartArray` | Parser sees `[` |
-| `onEndArray` | Parser sees `]` |
-| `onKey(name)` | Parser finishes a string in key position |
-| `onValue(v)` | Parser finishes a leaf value (string, number, boolean, null) |
-| `onEnd` | `parser.end()` was called and any trailing whitespace consumed |
-| `onError(err)` | Malformed input — the parser cannot continue after this |
+| Event           | Fires when                                                     |
+| --------------- | -------------------------------------------------------------- |
+| `onStartObject` | Parser sees `{`                                                |
+| `onEndObject`   | Parser sees `}`                                                |
+| `onStartArray`  | Parser sees `[`                                                |
+| `onEndArray`    | Parser sees `]`                                                |
+| `onKey(name)`   | Parser finishes a string in key position                       |
+| `onValue(v)`    | Parser finishes a leaf value (string, number, boolean, null)   |
+| `onEnd`         | `parser.end()` was called and any trailing whitespace consumed |
+| `onError(err)`  | Malformed input — the parser cannot continue after this        |
 
 ## Cross-chunk safety
 

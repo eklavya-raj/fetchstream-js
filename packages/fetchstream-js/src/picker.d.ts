@@ -1,4 +1,4 @@
-// Type definitions for `fetchstream/picker`
+// Type definitions for `fetchstream-js/picker`
 //
 // Picker layer: tracks the current path inside the JSON document and
 // materializes only the subtrees that match a subscription.

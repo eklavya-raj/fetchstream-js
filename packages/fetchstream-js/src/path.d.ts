@@ -1,6 +1,6 @@
-// Type definitions for `fetchstream/path`
+// Type definitions for `fetchstream-js/path`
 //
-// Path compiler/matcher for the JSONPath-lite syntax used by fetchstream.
+// Path compiler/matcher for the JSONPath-lite syntax used by fetchstream-js.
 //
 // Supported syntax:
 //   $              -> root value

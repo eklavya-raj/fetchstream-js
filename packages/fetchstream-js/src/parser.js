@@ -1,4 +1,4 @@
-// fetchstream/src/parser.js
+// fetchstream-js/src/parser.js
 // Byte-level streaming JSON parser. Emits SAX-style events as bytes arrive.
 //
 // Handlers (all optional):

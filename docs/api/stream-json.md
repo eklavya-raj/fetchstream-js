@@ -9,7 +9,7 @@ Returns a fresh `StreamHandle` **without** initiating a fetch. You feed bytes ma
 ## Usage
 
 ```js
-import { streamJSON } from "fetchstream";
+import { streamJSON } from "fetchstream-js";
 
 const stream = streamJSON();
 
@@ -30,15 +30,15 @@ await stream;
 
 For HTTP responses, prefer [`fetchStream`](/api/fetch-stream) — it handles the body reader for you.
 
-For Node `Readable`s or arbitrary async iterables, prefer [`streamFrom`](/guide/node) from `fetchstream/node`.
+For Node `Readable`s or arbitrary async iterables, prefer [`streamFrom`](/guide/node) from `fetchstream-js/node`.
 
 ## Methods (added by `StreamHandle`)
 
-| Method | Description |
-| ------ | ----------- |
-| `.feed(bytes)` | Push a `Uint8Array` chunk |
-| `.feedText(string)` | UTF-8 encode and push a string |
-| `.end()` | Signal that no more bytes are coming |
+| Method              | Description                          |
+| ------------------- | ------------------------------------ |
+| `.feed(bytes)`      | Push a `Uint8Array` chunk            |
+| `.feedText(string)` | UTF-8 encode and push a string       |
+| `.end()`            | Signal that no more bytes are coming |
 
 Multi-byte UTF-8 characters can be split across chunks — the parser stitches them. Don't worry about chunk boundaries.
 
@@ -47,7 +47,7 @@ Multi-byte UTF-8 characters can be split across chunks — the parser stitches t
 ```js
 const s = streamJSON();
 s.on("$.items.*", handle); // ✅ register first
-s.feed(chunk);             // then feed
+s.feed(chunk); // then feed
 ```
 
 Subscriptions registered after bytes are already fed will miss earlier matches.

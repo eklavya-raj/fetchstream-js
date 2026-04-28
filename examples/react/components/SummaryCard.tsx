@@ -75,7 +75,7 @@ export default function SummaryCard({
           </div>
           <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
             Both finish at network speed.{" "}
-            <span className="font-semibold">fetchstream</span> shows row #1 ~
+            <span className="font-semibold">fetchstream-js</span> shows row #1 ~
             {speedup >= 10 ? speedup.toFixed(0) : speedup.toFixed(1)}× sooner so
             users see content while bytes are still arriving.
           </p>

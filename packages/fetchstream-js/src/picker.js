@@ -1,4 +1,4 @@
-// fetchstream/src/picker.js
+// fetchstream-js/src/picker.js
 // Layer on top of JSONStreamParser that:
 //   - tracks the current path inside the JSON document
 //   - lets the user subscribe to paths via JSONPath-lite strings

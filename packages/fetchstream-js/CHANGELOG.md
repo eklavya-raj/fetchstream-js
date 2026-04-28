@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the `fetchstream` package will be documented here.
+All notable changes to the `fetchstream-js` package will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `<number>` — coalesce over N milliseconds.
   - The very last update is flushed synchronously when the stream ends, so
     consumers always observe the final state before `done` resolves.
-- Subpath export `fetchstream/picker` and explicit conditional exports map
+- Subpath export `fetchstream-js/picker` and explicit conditional exports map
   with `types`/`import`/`default` for every entry point.
 - `prepublishOnly` runs the test suite before any `npm publish`.
 - LICENSE file (MIT) shipped in the package tarball.

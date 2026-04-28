@@ -16,13 +16,13 @@ function Hero() {
   return (
     <header className="flex flex-col items-start gap-5">
       <a
-        href="https://github.com/eklavya-raj/fetchstream"
+        href="https://github.com/eklavya-raj/fetchstream-js"
         target="_blank"
         rel="noreferrer"
         className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-xs font-medium text-zinc-700 backdrop-blur-sm transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-300 dark:hover:border-zinc-700"
       >
         <span className="size-1.5 rounded-full bg-emerald-500" />
-        fetchstream · streaming JSON parser
+        fetchstream-js · streaming JSON parser
         <span className="text-zinc-400 dark:text-zinc-600">→</span>
       </a>
       <h1 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-5xl dark:text-zinc-50">
@@ -71,7 +71,7 @@ function Footer() {
       <p className="flex items-center gap-3">
         <a
           className="hover:underline"
-          href="https://www.npmjs.com/package/fetchstream"
+          href="https://www.npmjs.com/package/fetchstream-js"
           target="_blank"
           rel="noreferrer"
         >
@@ -79,7 +79,7 @@ function Footer() {
         </a>
         <a
           className="hover:underline"
-          href="https://github.com/eklavya-raj/fetchstream"
+          href="https://github.com/eklavya-raj/fetchstream-js"
           target="_blank"
           rel="noreferrer"
         >

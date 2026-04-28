@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "fetchstream vs fetch + JSON.parse — live benchmark",
+  title: "fetchstream-js vs fetch + JSON.parse — live benchmark",
   description:
-    "Side-by-side comparison of classic fetch + JSON.parse vs streaming JSON parsing with fetchstream against a real 5 MB JSON dataset.",
+    "Side-by-side comparison of classic fetch + JSON.parse vs streaming JSON parsing with fetchstream-js against a real 5 MB JSON dataset.",
 };
 
 export default function RootLayout({

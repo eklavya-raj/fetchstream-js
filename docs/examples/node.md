@@ -40,7 +40,7 @@ res.end();
 ## Per-match consumer
 
 ```js
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 const url = "http://localhost:8787/data";
 let count = 0;
@@ -53,7 +53,9 @@ await fetchStream(url).on("$.*", (item) => {
   }
 });
 
-console.log(`Total: ${count} items in ${(performance.now() - t0).toFixed(0)} ms`);
+console.log(
+  `Total: ${count} items in ${(performance.now() - t0).toFixed(0)} ms`,
+);
 ```
 
 Output:
@@ -67,7 +69,7 @@ Total: 5000 items in 4982 ms
 ## Live consumer
 
 ```js
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 let count = 0;
 await fetchStream("http://localhost:8787/data").live(

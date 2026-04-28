@@ -21,14 +21,14 @@ Then open one of the HTML files in your browser:
 
 Two side-by-side panes:
 
-| Pane              | Strategy                                          |
-| ----------------- | ------------------------------------------------- |
+| Pane                 | Strategy                                       |
+| -------------------- | ---------------------------------------------- |
 | `fetch + JSON.parse` | Buffers the entire body, parses, then renders. |
 | `fetchStream`        | Streams items as they arrive.                  |
 
 ```html
 <script type="module">
-  import { fetchStream } from "https://esm.sh/fetchstream";
+  import { fetchStream } from "https://esm.sh/fetchstream-js";
 
   // Classic — blocks until the whole body arrives
   const t0 = performance.now();
@@ -51,7 +51,7 @@ Same dataset, but using `live()` to mirror the whole document:
 
 ```html
 <script type="module">
-  import { fetchStream } from "https://esm.sh/fetchstream";
+  import { fetchStream } from "https://esm.sh/fetchstream-js";
 
   fetchStream("http://localhost:8787/data").live(
     (root) => {
@@ -68,7 +68,7 @@ The page shows a counter ticking up as items stream in, throttled to one update 
 
 ## What this proves
 
-- `fetchstream` works **without** a build step — direct ES module imports from a CDN
+- `fetchstream-js` works **without** a build step — direct ES module imports from a CDN
 - It works in **every modern browser** — Chrome, Safari, Firefox, Edge
 - No special framework, no `node_modules`, no compilation
 - Compare-and-contrast against the native `fetch().json()` flow side-by-side

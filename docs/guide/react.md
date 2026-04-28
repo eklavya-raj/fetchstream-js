@@ -1,12 +1,12 @@
 # React integration
 
-`fetchstream` works in React with **zero special tooling**. The library's built-in `requestAnimationFrame` throttling means you don't need a custom `useRafState` hook or `useTransition` — just a plain `useState` plus a tick.
+`fetchstream-js` works in React with **zero special tooling**. The library's built-in `requestAnimationFrame` throttling means you don't need a custom `useRafState` hook or `useTransition` — just a plain `useState` plus a tick.
 
 ## Minimal example
 
 ```jsx
 import { useEffect, useState } from "react";
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 export default function ProductList() {
   const [products, setProducts] = useState([]);
@@ -22,7 +22,9 @@ export default function ProductList() {
 
   return (
     <ul>
-      {products.map((p) => <li key={p.id}>{p.name}</li>)}
+      {products.map((p) => (
+        <li key={p.id}>{p.name}</li>
+      ))}
     </ul>
   );
 }
@@ -36,7 +38,7 @@ Spreading `[...root.products]` on every callback creates a new array each frame.
 
 ```jsx
 import { useEffect, useReducer, useRef } from "react";
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 export default function ProductList() {
   const dataRef = useRef([]);
@@ -56,7 +58,9 @@ export default function ProductList() {
 
   return (
     <ul>
-      {dataRef.current.map((p) => <li key={p.id}>{p.name}</li>)}
+      {dataRef.current.map((p) => (
+        <li key={p.id}>{p.name}</li>
+      ))}
     </ul>
   );
 }
@@ -72,7 +76,7 @@ Wrap the pattern in a reusable hook:
 // hooks/useFetchStream.ts
 "use client";
 import { useEffect, useReducer, useRef } from "react";
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 export function useFetchStream<T = unknown>(url: string | null) {
   const dataRef = useRef<T | undefined>(undefined);
@@ -108,7 +112,7 @@ If you'd rather append items as they arrive (no full-tree mirror), use `.on()`:
 
 ```jsx
 import { useEffect, useReducer, useRef } from "react";
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 function ProductFeed() {
   const items = useRef([]);
@@ -117,15 +121,18 @@ function ProductFeed() {
   useEffect(() => {
     const ac = new AbortController();
     let frame = 0;
-    fetchStream("/api/products", { signal: ac.signal })
-      .on("$.products.*", (p) => {
+    fetchStream("/api/products", { signal: ac.signal }).on(
+      "$.products.*",
+      (p) => {
         items.current.push(p);
         // batch with rAF manually since .on() has no throttle option
-        if (!frame) frame = requestAnimationFrame(() => {
-          frame = 0;
-          tick();
-        });
-      });
+        if (!frame)
+          frame = requestAnimationFrame(() => {
+            frame = 0;
+            tick();
+          });
+      },
+    );
     return () => ac.abort();
   }, []);
 
@@ -147,7 +154,7 @@ Streaming JSON inside an RSC-rendered page works too — call `fetchStream` in a
 
 ```jsx
 // app/products/page.tsx
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 export default async function Page() {
   const items: Product[] = [];

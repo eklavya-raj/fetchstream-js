@@ -1,26 +1,26 @@
 {
-  "name": "fetchstream-monorepo",
+  "name": "fetchstream-js-monorepo",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Monorepo for the fetchstream library and its examples",
+  "description": "Monorepo for the fetchstream-js library and its examples",
   "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=18",
     "pnpm": ">=8"
   },
   "scripts": {
-    "test": "pnpm -F fetchstream run test",
+    "test": "pnpm -F fetchstream-js run test",
     "test:all": "pnpm -r --if-present run test",
-    "bench": "pnpm -F fetchstream run bench",
+    "bench": "pnpm -F fetchstream-js run bench",
     "build:react": "pnpm -F react run build",
     "dev:react": "pnpm -F react run dev",
     "docs:dev": "pnpm -F docs run dev",
     "docs:build": "pnpm -F docs run build",
     "docs:preview": "pnpm -F docs run preview",
-    "demo:server": "pnpm -F @fetchstream/node-examples run server",
-    "demo:node": "pnpm -F @fetchstream/node-examples run start",
-    "demo:live": "pnpm -F @fetchstream/node-examples run live",
+    "demo:server": "pnpm -F @fetchstream-js/node-examples run server",
+    "demo:node": "pnpm -F @fetchstream-js/node-examples run start",
+    "demo:live": "pnpm -F @fetchstream-js/node-examples run live",
     "clean": "pnpm -r exec rimraf node_modules dist .vite && rimraf node_modules"
   },
   "devDependencies": {

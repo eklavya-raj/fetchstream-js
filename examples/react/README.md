@@ -1,15 +1,15 @@
-# fetchstream vs fetch + JSON.parse — Next.js demo
+# fetchstream-js vs fetch + JSON.parse — Next.js demo
 
-**🚀 Live demo:** [fetchstream.vercel.app](https://fetchstream.vercel.app/)
+**🚀 Live demo:** [fetchstream-js.vercel.app](https://fetchstream-js.vercel.app/)
 
 A production-grade, side-by-side benchmark UI built with Next.js 16, React 19,
 and Tailwind v4. Both panes hit the same dataset, read the same bytes, and
 race to put rows on screen:
 
-| Pane          | Strategy                                                                |
-| ------------- | ----------------------------------------------------------------------- |
-| **Classic**   | `fetch()` → buffer the whole body → `JSON.parse()` → render.            |
-| **Streaming** | `fetch()` → feed bytes into `fetchstream` → render rows as they arrive. |
+| Pane          | Strategy                                                                   |
+| ------------- | -------------------------------------------------------------------------- |
+| **Classic**   | `fetch()` → buffer the whole body → `JSON.parse()` → render.               |
+| **Streaming** | `fetch()` → feed bytes into `fetchstream-js` → render rows as they arrive. |
 
 Dataset: [`microsoftedge.github.io/Demos/json-dummy-data/5MB.json`](https://microsoftedge.github.io/Demos/json-dummy-data/5MB.json)
 (an array of ~10k objects, served with permissive CORS over GitHub Pages).
@@ -19,7 +19,7 @@ Dataset: [`microsoftedge.github.io/Demos/json-dummy-data/5MB.json`](https://micr
 From the monorepo root:
 
 ```bash
-pnpm install     # links workspaces — picks up packages/fetchstream
+pnpm install     # links workspaces — picks up packages/fetchstream-js
 pnpm -F react dev
 ```
 

@@ -1,15 +1,15 @@
 {
-  "name": "@fetchstream/node-examples",
+  "name": "@fetchstream-js/node-examples",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Node demos for fetchstream: a slow JSON server plus two consumers.",
+  "description": "Node demos for fetchstream-js: a slow JSON server plus two consumers.",
   "scripts": {
     "server": "node server.mjs",
     "start": "node node-example.mjs",
     "live": "node live-node.mjs"
   },
   "dependencies": {
-    "fetchstream": "workspace:*"
+    "fetchstream-js": "workspace:*"
   }
 }

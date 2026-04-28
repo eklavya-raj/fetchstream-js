@@ -1,16 +1,16 @@
 # API reference
 
-`fetchstream` ships a small, focused public surface. Everything you need is exported from the root entry point; framework- and runtime-specific extras live under subpath imports.
+`fetchstream-js` ships a small, focused public surface. Everything you need is exported from the root entry point; framework- and runtime-specific extras live under subpath imports.
 
 ## Subpath imports
 
-| Import path          | Provides                                                  |
-| -------------------- | --------------------------------------------------------- |
-| `fetchstream`        | `fetchStream`, `streamJSON`, `parse`, `StreamHandle`      |
-| `fetchstream/node`   | Everything above, plus `streamFrom(source)`               |
-| `fetchstream/parser` | `JSONStreamParser` (low-level SAX)                        |
-| `fetchstream/picker` | `StreamPicker` (path-aware materializer)                  |
-| `fetchstream/path`   | `compilePath`, `matches`, `prefixMatches`, `pathToString` |
+| Import path             | Provides                                                  |
+| ----------------------- | --------------------------------------------------------- |
+| `fetchstream-js`        | `fetchStream`, `streamJSON`, `parse`, `StreamHandle`      |
+| `fetchstream-js/node`   | Everything above, plus `streamFrom(source)`               |
+| `fetchstream-js/parser` | `JSONStreamParser` (low-level SAX)                        |
+| `fetchstream-js/picker` | `StreamPicker` (path-aware materializer)                  |
+| `fetchstream-js/path`   | `compilePath`, `matches`, `prefixMatches`, `pathToString` |
 
 ## Top-level functions
 

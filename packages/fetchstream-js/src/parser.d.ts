@@ -1,4 +1,4 @@
-// Type definitions for `fetchstream/parser`
+// Type definitions for `fetchstream-js/parser`
 //
 // Low-level SAX-style streaming JSON parser. No path matching, no value
 // materialization beyond primitives.

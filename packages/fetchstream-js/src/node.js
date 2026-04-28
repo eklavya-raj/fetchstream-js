@@ -1,4 +1,4 @@
-// fetchstream/src/node.js
+// fetchstream-js/src/node.js
 // Node-friendly adapter. Works with anything that implements the async iterator
 // protocol (e.g. node:stream Readable, node:http IncomingMessage, fs.createReadStream).
 //

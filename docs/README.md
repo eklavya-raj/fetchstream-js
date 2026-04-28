@@ -1,6 +1,6 @@
-# fetchstream documentation
+# fetchstream-js documentation
 
-VitePress site for the [`fetchstream`](https://github.com/eklavya-raj/fetchstream/tree/main/packages/fetchstream) library.
+VitePress site for the [`fetchstream-js`](https://github.com/eklavya-raj/fetchstream-js/tree/main/packages/fetchstream-js) library.
 
 ## Local development
 

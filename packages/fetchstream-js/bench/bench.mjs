@@ -1,9 +1,9 @@
-// Benchmark: fetchstream vs JSON.parse
+// Benchmark: fetchstream-js vs JSON.parse
 //
 // Two scenarios, both measuring "wall time from first byte to first useful value":
 //   1. Whole-document parse: matches what JSON.parse does (no streaming benefit visible).
 //   2. Streaming source: chunks arrive at network-like speed.
-//      Here fetchstream emits values mid-stream while JSON.parse is forced
+//      Here fetchstream-js emits values mid-stream while JSON.parse is forced
 //      to wait for the final byte.
 
 import { performance } from 'node:perf_hooks';
@@ -50,7 +50,7 @@ function benchWhole(N) {
   let t1 = performance.now();
   console.log(`JSON.parse():            ${((t1 - t0) / ITER).toFixed(2)} ms/iter`);
 
-  // fetchstream full-tree (pick root)
+  // fetchstream-js full-tree (pick root)
   t0 = performance.now();
   for (let k = 0; k < ITER; k++) {
     const h = new StreamHandle();
@@ -61,9 +61,9 @@ function benchWhole(N) {
     if (!r) throw new Error();
   }
   t1 = performance.now();
-  console.log(`fetchstream $ (full):    ${((t1 - t0) / ITER).toFixed(2)} ms/iter`);
+  console.log(`fetchstream-js $ (full):    ${((t1 - t0) / ITER).toFixed(2)} ms/iter`);
 
-  // fetchstream selective (just the array elements)
+  // fetchstream-js selective (just the array elements)
   t0 = performance.now();
   for (let k = 0; k < ITER; k++) {
     const h = new StreamHandle();
@@ -74,7 +74,7 @@ function benchWhole(N) {
     if (count !== N) throw new Error();
   }
   t1 = performance.now();
-  console.log(`fetchstream $.results.*: ${((t1 - t0) / ITER).toFixed(2)} ms/iter`);
+  console.log(`fetchstream-js $.results.*: ${((t1 - t0) / ITER).toFixed(2)} ms/iter`);
 
   // SAX events only (no value materialization beyond primitives)
   t0 = performance.now();
@@ -88,7 +88,7 @@ function benchWhole(N) {
     p.end();
   }
   t1 = performance.now();
-  console.log(`fetchstream SAX only:    ${((t1 - t0) / ITER).toFixed(2)} ms/iter`);
+  console.log(`fetchstream-js SAX only:    ${((t1 - t0) / ITER).toFixed(2)} ms/iter`);
 }
 
 // ----- 2) Streaming-source comparison (real win) -----
@@ -120,7 +120,7 @@ async function benchStreaming(N) {
     console.log(`JSON.parse(after full download): first item available at ${(t1 - t0).toFixed(0)} ms (count=${obj.results.length})`);
   }
 
-  // fetchstream emits each item as soon as its closing `}` arrives
+  // fetchstream-js emits each item as soon as its closing `}` arrives
   {
     const h = new StreamHandle();
     let firstAt = -1;
@@ -137,7 +137,7 @@ async function benchStreaming(N) {
       h.feed(bytes.subarray(i, Math.min(bytes.length, i + CHUNK)));
     }
     h.end();
-    console.log(`fetchstream $.results.*: first item at ${firstAt.toFixed(0)} ms, last at ${lastAt.toFixed(0)} ms (count=${count})`);
+    console.log(`fetchstream-js $.results.*: first item at ${firstAt.toFixed(0)} ms, last at ${lastAt.toFixed(0)} ms (count=${count})`);
   }
 }
 

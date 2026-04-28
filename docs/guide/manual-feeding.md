@@ -5,7 +5,7 @@ Sometimes you have bytes from a non-fetch source (WebSocket, MessageChannel, fil
 `streamJSON()` returns a fresh `StreamHandle` you can feed manually:
 
 ```js
-import { streamJSON } from "fetchstream";
+import { streamJSON } from "fetchstream-js";
 
 const stream = streamJSON();
 
@@ -20,12 +20,12 @@ await stream;
 
 ## API
 
-| Method | Description |
-| ------ | ----------- |
-| `.feed(uint8Array)` | Push a chunk of bytes |
-| `.feedText(string)` | UTF-8 encode and push (convenience) |
-| `.end()` | Signal that no more bytes are coming |
-| `.then` / `.catch` | Awaitable; resolves when `.end()` is processed |
+| Method              | Description                                    |
+| ------------------- | ---------------------------------------------- |
+| `.feed(uint8Array)` | Push a chunk of bytes                          |
+| `.feedText(string)` | UTF-8 encode and push (convenience)            |
+| `.end()`            | Signal that no more bytes are coming           |
+| `.then` / `.catch`  | Awaitable; resolves when `.end()` is processed |
 
 All chunks **must** be valid UTF-8 byte slices of the original document. Multi-byte characters can be split across chunks — the parser stitches them.
 
@@ -79,7 +79,7 @@ Works on multi-GB files in modern browsers.
 ```js
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { streamJSON } from "fetchstream";
+import { streamJSON } from "fetchstream-js";
 
 test("emits each user", async () => {
   const got = [];

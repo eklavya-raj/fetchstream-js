@@ -1,4 +1,4 @@
-// fetchstream/src/index.js
+// fetchstream-js/src/index.js
 // Universal entry point. Works in browsers (native fetch) and Node 18+.
 
 import { JSONStreamParser } from './parser.js';

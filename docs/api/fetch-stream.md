@@ -12,7 +12,7 @@ Streams JSON from a URL. Mirrors the WHATWG `fetch()` signature **exactly** — 
 ## Basic usage
 
 ```js
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 await fetchStream("/api/products")
   .on("$.products.*", (p) => render(p))
@@ -56,19 +56,19 @@ Aborting:
 
 ## Error handling
 
-| Error | When |
-| ----- | ---- |
-| `Error("HTTP 404 …")` | Server responded with non-2xx |
-| Parser error | Malformed JSON in the response body |
-| `AbortError` | `options.signal` was aborted |
-| `TypeError` | Network failure (CORS, DNS, etc.) |
+| Error                 | When                                |
+| --------------------- | ----------------------------------- |
+| `Error("HTTP 404 …")` | Server responded with non-2xx       |
+| Parser error          | Malformed JSON in the response body |
+| `AbortError`          | `options.signal` was aborted        |
+| `TypeError`           | Network failure (CORS, DNS, etc.)   |
 
 ```js
 try {
   await fetchStream(url).on("$.items.*", render);
 } catch (err) {
   if (err.status === 404) showNotFound();
-  else if (err.name === "AbortError") /* ... */;
+  else if (err.name === "AbortError") /* ... */ ;
   else throw err;
 }
 ```
@@ -76,8 +76,8 @@ try {
 For HTTP errors, the thrown error has additional properties:
 
 ```ts
-err.status   // number — HTTP status code
-err.response // Response — the original Response object (already drained)
+err.status; // number — HTTP status code
+err.response; // Response — the original Response object (already drained)
 ```
 
 ## Subscriptions before fetch
@@ -85,10 +85,7 @@ err.response // Response — the original Response object (already drained)
 The actual fetch is deferred to the next microtask, so synchronous chaining works:
 
 ```js
-fetchStream(url)
-  .on("$.a", a)
-  .on("$.b", b)
-  .on("$.c", c);
+fetchStream(url).on("$.a", a).on("$.b", b).on("$.c", c);
 // fetch starts here, with all 3 subscriptions registered
 ```
 

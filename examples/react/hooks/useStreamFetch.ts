@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import {  streamJSON } from "fetchstream";
+import {  streamJSON } from "fetchstream-js";
 import { initialMetrics, type Item, type Metrics } from "../app/types";
-import { streamFrom } from "fetchstream/node";
+import { streamFrom } from "fetchstream-js/node";
 
 /**
  * Streaming pattern using the headline `fetchStream(url)` API.

@@ -21,7 +21,7 @@ Streamed JSON:
 ```json
 {
   "user1": { "name": "Alex", "age": 22 },
-  "user2": { "name": "Sam",  "age": 25 },
+  "user2": { "name": "Sam", "age": 25 },
   "user3": { "name": "John", "age": 28 }
 }
 ```
@@ -43,7 +43,7 @@ Streamed JSON:
 ```json
 [
   { "name": "Alex", "age": 22 },
-  { "name": "Sam",  "age": 25 }
+  { "name": "Sam", "age": 25 }
 ]
 ```
 
@@ -64,7 +64,7 @@ Streamed JSON:
 {
   "students": [{ "name": "Alex" }, { "name": "Sam" }],
   "teachers": [{ "name": "David" }],
-  "admins":   [{ "name": "Mike" }]
+  "admins": [{ "name": "Mike" }]
 }
 ```
 
@@ -114,10 +114,13 @@ Fires on every parser mutation — useful for benchmarks, tests, or non-UI consu
 Use `.onProgress(path, cb)` to mirror **just one subtree** of the document:
 
 ```js
-fetchStream(url)
-  .onProgress("$.products", (products, path) => render(products), {
+fetchStream(url).onProgress(
+  "$.products",
+  (products, path) => render(products),
+  {
     throttle: "raf",
-  });
+  },
+);
 ```
 
 The callback fires every time the products subtree mutates — but not when sibling keys are added.
@@ -128,7 +131,7 @@ The callback fires every time the products subtree mutates — but not when sibl
 
 ```jsx
 import { useEffect, useState } from "react";
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 function App() {
   const [snap, setSnap] = useState({ root: undefined });

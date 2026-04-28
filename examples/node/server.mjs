@@ -1,5 +1,5 @@
 // A tiny Node HTTP server that streams a large JSON payload SLOWLY,
-// chunk by chunk. Use it to see fetchstream emit values as bytes arrive.
+// chunk by chunk. Use it to see fetchstream-js emit values as bytes arrive.
 //
 //   pnpm demo:server
 //   curl http://localhost:8787/data
@@ -13,18 +13,18 @@ const ITEM_DELAY_MS = 25;       // pause between items
 const ITEMS_PER_CHUNK = 1;      // smaller -> "drippier" stream
 
 const indexHtml = `<!doctype html>
-<title>fetchstream demo</title>
+<title>fetchstream-js demo</title>
 <meta charset="utf-8">
 <style>
   body{font:14px system-ui,sans-serif;max-width:760px;margin:2rem auto;padding:0 1rem}
   pre{background:#f5f5f5;padding:8px;border-radius:6px;overflow:auto}
   a{color:#06f}
 </style>
-<h1>fetchstream demo server</h1>
+<h1>fetchstream-js demo server</h1>
 <p>This server streams <code>application/json</code> with one item every ${ITEM_DELAY_MS} ms.</p>
 <ul>
   <li><a href="/data">/data</a> &mdash; the JSON stream (${TOTAL_ITEMS} items)</li>
-  <li>Open <code>examples/browser/browser.html</code> (per-match) or <code>examples/browser/live-browser.html</code> (live mirror) to see fetchstream consume it incrementally.</li>
+  <li>Open <code>examples/browser/browser.html</code> (per-match) or <code>examples/browser/live-browser.html</code> (live mirror) to see fetchstream-js consume it incrementally.</li>
 </ul>`;
 
 const server = http.createServer(async (req, res) => {
@@ -66,7 +66,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`fetchstream demo server: http://localhost:${PORT}`);
+  console.log(`fetchstream-js demo server: http://localhost:${PORT}`);
   console.log(`  /        -> info page`);
   console.log(`  /data    -> slow JSON stream (${TOTAL_ITEMS} items, ${ITEM_DELAY_MS}ms each)`);
 });

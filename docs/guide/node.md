@@ -1,15 +1,16 @@
 # Node.js
 
-`fetchstream` works in Node 18+ out of the box (uses native `fetch` + `TextDecoder`). For Node-specific stream sources, use the `fetchstream/node` subpath.
+`fetchstream-js` works in Node 18+ out of the box (uses native `fetch` + `TextDecoder`). For Node-specific stream sources, use the `fetchstream-js/node` subpath.
 
 ## Pipe a `Readable`
 
 ```js
-import { streamFrom } from "fetchstream/node";
+import { streamFrom } from "fetchstream-js/node";
 import { createReadStream } from "node:fs";
 
-await streamFrom(createReadStream("huge.json"))
-  .on("$.records.*", (record) => process(record));
+await streamFrom(createReadStream("huge.json")).on("$.records.*", (record) =>
+  process(record),
+);
 ```
 
 `streamFrom` accepts:
@@ -21,7 +22,7 @@ await streamFrom(createReadStream("huge.json"))
 ## ETL pipeline
 
 ```js
-import { streamFrom } from "fetchstream/node";
+import { streamFrom } from "fetchstream-js/node";
 import { createReadStream } from "node:fs";
 
 const file = createReadStream("./exports/orders.json");
@@ -38,10 +39,11 @@ Constant-memory ingestion of arbitrarily large JSON files.
 In Node, `fetchStream(url)` works the same as in the browser — wrapping `fetch()`:
 
 ```js
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
-await fetchStream("https://api.example.com/data")
-  .on("$.items.*", (item) => process(item));
+await fetchStream("https://api.example.com/data").on("$.items.*", (item) =>
+  process(item),
+);
 ```
 
 ## Express middleware
@@ -50,7 +52,7 @@ Stream a parsed body into a handler:
 
 ```js
 import express from "express";
-import { streamFrom } from "fetchstream/node";
+import { streamFrom } from "fetchstream-js/node";
 
 const app = express();
 
@@ -81,7 +83,7 @@ worker.on("message", (item) => handle(item));
 ```js
 // parser-worker.js
 import { parentPort } from "node:worker_threads";
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 parentPort.on("message", async ({ url }) => {
   await fetchStream(url).on("$.items.*", (item) => {
@@ -96,7 +98,7 @@ Build a `jq`-style CLI:
 
 ```js
 #!/usr/bin/env node
-import { streamFrom } from "fetchstream/node";
+import { streamFrom } from "fetchstream-js/node";
 
 const path = process.argv[2] || "$.*";
 await streamFrom(process.stdin).on(path, (val) => {
@@ -110,7 +112,7 @@ $ curl https://example.com/data.json | mytool '$.users.*'
 
 ## Memory characteristics
 
-`fetchstream` keeps roughly:
+`fetchstream-js` keeps roughly:
 
 - One `Uint8Array` per active in-flight string/number/keyword (typically a few hundred bytes)
 - Whatever JS objects you've materialized via subscriptions

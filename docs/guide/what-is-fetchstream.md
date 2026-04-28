@@ -1,6 +1,6 @@
-# What is fetchstream?
+# What is fetchstream-js?
 
-`fetchstream` is a **streaming JSON parser** that lets your application consume `application/json` responses incrementally — as bytes arrive from the network — rather than waiting for the entire response body before calling `JSON.parse`.
+`fetchstream-js` is a **streaming JSON parser** that lets your application consume `application/json` responses incrementally — as bytes arrive from the network — rather than waiting for the entire response body before calling `JSON.parse`.
 
 It sits directly on top of the native `fetch()` body stream in browsers and Node 18+.
 
@@ -12,18 +12,18 @@ The browser's built-in `JSON.parse` is fast, but it requires the **entire** resp
 // ❌ Blocks the UI for seconds on large responses
 const res = await fetch("/api/products");
 const data = await res.json(); // waits for all 5 MB
-render(data);                  // THEN renders
+render(data); // THEN renders
 ```
 
 For a 5 MB JSON list over a slow network, that's a 3-second blank screen.
 
 ## The fix
 
-`fetchstream` parses JSON incrementally from the raw byte stream, emitting values the moment they complete:
+`fetchstream-js` parses JSON incrementally from the raw byte stream, emitting values the moment they complete:
 
 ```js
 // ✅ Renders each product as its `}` arrives over the wire
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 await fetchStream("/api/products").on("$.products.*", (product) => {
   render(product);
@@ -66,4 +66,4 @@ The shape of `root` mid-stream matches the shape of your final document, just in
 - ❌ Not a JSONPath implementation — it supports a deliberately small, fast subset (no recursive descent `..`)
 - ❌ Not faster than `JSON.parse` for small payloads or when you need the whole document before doing anything
 
-Use `fetchstream` when **time-to-first-value** matters.
+Use `fetchstream-js` when **time-to-first-value** matters.

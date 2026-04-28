@@ -5,15 +5,15 @@
 ::: code-group
 
 ```bash [npm]
-npm install fetchstream
+npm install fetchstream-js
 ```
 
 ```bash [pnpm]
-pnpm add fetchstream
+pnpm add fetchstream-js
 ```
 
 ```bash [yarn]
-yarn add fetchstream
+yarn add fetchstream-js
 ```
 
 :::
@@ -23,7 +23,7 @@ yarn add fetchstream
 ## Your first stream
 
 ```js
-import { fetchStream } from "fetchstream";
+import { fetchStream } from "fetchstream-js";
 
 await fetchStream("/api/users").on("$.users.*", (user) => {
   console.log(user.name);
@@ -49,7 +49,9 @@ fetchStream("/api/products")
 Same idea, but with backpressure — `await render(product)` blocks the parser until your handler finishes:
 
 ```js
-for await (const product of fetchStream("/api/products").iterate("$.products.*")) {
+for await (const product of fetchStream("/api/products").iterate(
+  "$.products.*",
+)) {
   await renderProduct(product);
 }
 ```
@@ -59,11 +61,14 @@ for await (const product of fetchStream("/api/products").iterate("$.products.*")
 When you want the **whole document** available to a UI as it streams in:
 
 ```js
-fetchStream("/api/data").live((root) => {
-  // `root` is the same reference every call, growing in place.
-  // Shape matches your final JSON exactly — just incomplete until done.
-  render(root);
-}, { throttle: "raf" });
+fetchStream("/api/data").live(
+  (root) => {
+    // `root` is the same reference every call, growing in place.
+    // Shape matches your final JSON exactly — just incomplete until done.
+    render(root);
+  },
+  { throttle: "raf" },
+);
 ```
 
 `throttle: "raf"` coalesces parser updates into one callback per animation frame — perfect for React/Vue/Svelte.
@@ -72,25 +77,41 @@ fetchStream("/api/data").live((root) => {
 
 ```js
 // flat objects
-fetchStream(url).on("$.id", (id) => { /* ... */ });
+fetchStream(url).on("$.id", (id) => {
+  /* ... */
+});
 
 // flat arrays of primitives
-fetchStream(url).on("$.tags.*", (tag) => { /* ... */ });
+fetchStream(url).on("$.tags.*", (tag) => {
+  /* ... */
+});
 
 // arrays of objects
-fetchStream(url).on("$.users.*", (user) => { /* ... */ });
+fetchStream(url).on("$.users.*", (user) => {
+  /* ... */
+});
 
 // envelope + payload
 fetchStream(url)
-  .on("$.status", (s) => { /* ... */ })
-  .on("$.data.*", (item) => { /* ... */ })
-  .on("$.errors.*", (e) => { /* ... */ });
+  .on("$.status", (s) => {
+    /* ... */
+  })
+  .on("$.data.*", (item) => {
+    /* ... */
+  })
+  .on("$.errors.*", (e) => {
+    /* ... */
+  });
 
 // deeply nested
-fetchStream(url).on("$.report.sections.*.rows.*", (row) => { /* ... */ });
+fetchStream(url).on("$.report.sections.*.rows.*", (row) => {
+  /* ... */
+});
 
 // arrays at the root
-fetchStream(url).on("$.*", (item) => { /* ... */ });
+fetchStream(url).on("$.*", (item) => {
+  /* ... */
+});
 ```
 
 See [Path syntax](/guide/paths) for the full specification.
@@ -102,8 +123,7 @@ See [Path syntax](/guide/paths) for the full specification.
 ```js
 const ac = new AbortController();
 
-fetchStream("/api/products", { signal: ac.signal })
-  .on("$.products.*", render);
+fetchStream("/api/products", { signal: ac.signal }).on("$.products.*", render);
 
 // Later — cancels the body reader and rejects the handle.
 ac.abort();

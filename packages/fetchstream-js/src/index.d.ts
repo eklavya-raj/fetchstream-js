@@ -1,5 +1,5 @@
-// Type definitions for fetchstream
-// Public entry point: `import { fetchStream, streamJSON, parse, ... } from 'fetchstream'`
+// Type definitions for fetchstream-js
+// Public entry point: `import { fetchStream, streamJSON, parse, ... } from 'fetchstream-js'`
 
 import { JSONStreamParser } from './parser';
 import { StreamPicker } from './picker';

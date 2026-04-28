@@ -4,50 +4,60 @@ Path expressions are a **deliberately small, fast subset** of JSONPath. Every ex
 
 ## Reference
 
-| Expression            | Meaning                                                    |
-| --------------------- | ---------------------------------------------------------- |
-| `$`                   | The root value                                             |
-| `$.foo`               | Object property `foo` of the root                          |
-| `$.a.b.c`             | Nested keys                                                |
-| `$.list.*`            | Every value of `list` (object value or array element)      |
-| `$.list[*]`           | Same as `.*`                                               |
-| `$.list[7]`           | Specific array index                                       |
-| `$["weird key.name"]` | Bracket-quoted key (allows dots, brackets, spaces)         |
+| Expression            | Meaning                                               |
+| --------------------- | ----------------------------------------------------- |
+| `$`                   | The root value                                        |
+| `$.foo`               | Object property `foo` of the root                     |
+| `$.a.b.c`             | Nested keys                                           |
+| `$.list.*`            | Every value of `list` (object value or array element) |
+| `$.list[*]`           | Same as `.*`                                          |
+| `$.list[7]`           | Specific array index                                  |
+| `$["weird key.name"]` | Bracket-quoted key (allows dots, brackets, spaces)    |
 
 ## Examples
 
 ### Array elements
 
 ```js
-fetchStream(url).on("$.users.*", (user) => { /* ... */ });
+fetchStream(url).on("$.users.*", (user) => {
+  /* ... */
+});
 // matches: $.users[0], $.users[1], $.users[2], ...
 ```
 
 ### Specific indices
 
 ```js
-fetchStream(url).on("$.users[0]", (first) => { /* ... */ });
+fetchStream(url).on("$.users[0]", (first) => {
+  /* ... */
+});
 // fires once with the first user only
 ```
 
 ### Nested traversal
 
 ```js
-fetchStream(url).on("$.report.sections.*.rows.*", (row) => { /* ... */ });
+fetchStream(url).on("$.report.sections.*.rows.*", (row) => {
+  /* ... */
+});
 // matches every row in every section
 ```
 
 ### Unusual key names
 
 ```js
-fetchStream(url).on('$["user.email"]', (email) => { /* ... */ });
+fetchStream(url).on('$["user.email"]', (email) => {
+  /* ... */
+});
 // keys with dots, brackets, or spaces need bracket-quoted notation
 ```
 
 ### Root array
 
 ```js
-fetchStream(url).on("$.*", (item) => { /* ... */ });
+fetchStream(url).on("$.*", (item) => {
+  /* ... */
+});
 // for top-level arrays like [{...}, {...}, {...}]
 ```
 
@@ -107,10 +117,10 @@ Subscribe to as many paths as you want — they're matched in parallel during a 
 
 ```js
 fetchStream(url)
-  .on("$.status", (s) => setStatus(s))         // fires once, very early
-  .on("$.totalCount", (n) => setCount(n))      // fires once, very early
-  .on("$.products.*", (p) => addProduct(p))    // fires N times
-  .on("$.errors.*", (e) => logError(e));       // fires 0+ times
+  .on("$.status", (s) => setStatus(s)) // fires once, very early
+  .on("$.totalCount", (n) => setCount(n)) // fires once, very early
+  .on("$.products.*", (p) => addProduct(p)) // fires N times
+  .on("$.errors.*", (e) => logError(e)); // fires 0+ times
 ```
 
 Only subtrees that match a subscription are materialized. Everything else is parsed structurally and dropped.
@@ -120,12 +130,12 @@ Only subtrees that match a subscription are materialized. Everything else is par
 For dynamic path matching:
 
 ```js
-import { compilePath, matches } from "fetchstream/path";
+import { compilePath, matches } from "fetchstream-js/path";
 
 const compiled = compilePath("$.users.*");
-matches(compiled, ["users", 0]);   // true
-matches(compiled, ["users", 5]);   // true
-matches(compiled, ["meta"]);       // false
+matches(compiled, ["users", 0]); // true
+matches(compiled, ["users", 5]); // true
+matches(compiled, ["meta"]); // false
 ```
 
 This is what `.on()` uses internally.
