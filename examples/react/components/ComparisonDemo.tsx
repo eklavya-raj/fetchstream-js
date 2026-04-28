@@ -78,7 +78,7 @@ export default function ComparisonDemo() {
         />
         <BenchmarkPane
           title="fetchstream-js"
-          subtitle="fetchstream-js .live(cb, { throttle: 'raf' }) — cards grow as bytes arrive."
+          subtitle="fetchStream.live(cb, { throttle: 'raf' }) — cards grow as bytes arrive."
           badge="Streaming"
           accent="emerald"
           metrics={stream.metrics}
