@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-29
+
 ### Changed (BREAKING, pre-1.0)
 
 - `live(cb)` / `onProgress(path, cb)` callbacks now receive **a single

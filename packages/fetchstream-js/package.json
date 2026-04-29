@@ -1,6 +1,6 @@
 {
   "name": "fetchstream-js",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Drop-in replacement for fetch() and axios.get() for JSON endpoints. Renders data as bytes arrive instead of waiting for the full response. One-line React integration via .live().",
   "type": "module",
   "main": "./src/index.js",
