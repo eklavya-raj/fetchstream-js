@@ -35,11 +35,11 @@ export default defineConfig({
         items: [
           {
             text: "Changelog",
-            link: "https://github.com/eklavya-raj/fetchstream-js/blob/main/packages/fetchstream-js/CHANGELOG.md",
+            link: "https://github.com/eklavya-raj/fetchstream-js/blob/master/packages/fetchstream-js/CHANGELOG.md",
           },
           {
             text: "Contributing",
-            link: "https://github.com/eklavya-raj/fetchstream-js/blob/main/CONTRIBUTING.md",
+            link: "https://github.com/eklavya-raj/fetchstream-js/blob/master/CONTRIBUTING.md",
           },
         ],
       },
